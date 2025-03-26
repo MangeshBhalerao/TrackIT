@@ -24,12 +24,20 @@ export default function Home() {
   ]
 
   return (
-    <div className="py-12">
+    <div 
+      className="py-12 min-h-screen"
+      style={{
+        backgroundImage: "url('')",
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+        backgroundRepeat: "no-repeat",
+      }}
+    >
       <div className="text-center">
-        <h1 className="text-4xl font-bold tracking-tight sm:text-6xl">
+        <h1 className="text-4xl font-bold tracking-tight sm:text-6xl text-white">
           Welcome to TrackIT
         </h1>
-        <p className="mt-6 text-lg leading-8 text-muted-foreground">
+        <p className="mt-6 text-lg leading-8 text-white">
           Your all-in-one platform for managing student life. Stay organized,
           focused, and healthy.
         </p>
@@ -44,13 +52,13 @@ export default function Home() {
                 <Link
                   key={feature.name}
                   href={feature.href}
-                  className="bg-white/5 backdrop-blur-md rounded-lg p-6 hover:bg-white/20 transition-colors"
+                  className="bg-white/5 backdrop-blur-md rounded-lg p-6 hover:bg-white/40 transition-colors"
                 >
-                  <div className="mb-4 inline-flex h-10 w-10 items-center justify-center rounded-lg bg-muted">
+                  <div className="mb-4 inline-flex h-10 w-10 items-center justify-center rounded-lg bg-white/10">
                     <Icon className="h-6 w-6" />
                   </div>
-                  <h3 className="mb-2 font-semibold">{feature.name}</h3>
-                  <p className="text-sm text-muted-foreground">
+                  <h3 className="mb-2 font-semibold text-white">{feature.name}</h3>
+                  <p className="text-sm text-white/90">
                     {feature.description}
                   </p>
                 </Link>
