@@ -353,23 +353,23 @@ export default function FitnessPage() {
               <div className="space-y-4">
                 <div className="flex justify-between items-center bg-white/5 rounded-lg p-4">
                   <span className="text-white/70">Chest</span>
-                  <span className="text-white">40"</span>
+                  <span className="text-white">40&quot;</span>
                 </div>
                 <div className="flex justify-between items-center bg-white/5 rounded-lg p-4">
                   <span className="text-white/70">Waist</span>
-                  <span className="text-white">32"</span>
+                  <span className="text-white">32&quot;</span>
                 </div>
                 <div className="flex justify-between items-center bg-white/5 rounded-lg p-4">
                   <span className="text-white/70">Hips</span>
-                  <span className="text-white">38"</span>
+                  <span className="text-white">38&quot;</span>
                 </div>
                 <div className="flex justify-between items-center bg-white/5 rounded-lg p-4">
                   <span className="text-white/70">Arms</span>
-                  <span className="text-white">14"</span>
+                  <span className="text-white">14&quot;</span>
                 </div>
                 <div className="flex justify-between items-center bg-white/5 rounded-lg p-4">
                   <span className="text-white/70">Legs</span>
-                  <span className="text-white">22"</span>
+                  <span className="text-white">22&quot;</span>
                 </div>
               </div>
             </div>
