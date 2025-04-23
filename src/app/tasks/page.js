@@ -159,7 +159,7 @@ export default function TasksPage() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           {/* Calendar Section */}
-          <div className="space-y-6">
+          <div className="">
             <RealTimeClock />
             <div className="bg-black/20 backdrop-blur-md border border-slate-700/50 rounded-lg p-6 shadow-lg">
               <h2 className="text-2xl font-bold text-white mb-4">Calendar</h2>
