@@ -15,12 +15,12 @@ export default function RealTimeClock() {
   }, [])
 
   return (
-    <div className="bg-slate-900/80 backdrop-blur-md border border-slate-700 rounded-lg p-6 shadow-lg">
-      <div className="text-center space-y-3">
-        <div className="text-3xl font-bold text-white">
+    <div className="bg-white/10 backdrop-blur-md border border-white/10 rounded-lg p-4">
+      <div className="text-center space-y-2">
+        <div className="text-2xl font-bold text-white">
           {format(currentTime, 'h:mm:ss a')}
         </div>
-        <div className="text-slate-300 font-medium">
+        <div className="text-white/70">
           {format(currentTime, 'EEEE, MMMM d, yyyy')}
         </div>
       </div>

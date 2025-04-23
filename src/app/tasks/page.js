@@ -161,7 +161,7 @@ export default function TasksPage() {
           {/* Calendar Section */}
           <div className="space-y-6">
             <RealTimeClock />
-            <div className="bg-white/10 backdrop-blur-md border border-white/10 rounded-lg p-6">
+            <div className="bg-black/20 backdrop-blur-md border border-slate-700/50 rounded-lg p-6 shadow-lg">
               <h2 className="text-2xl font-bold text-white mb-4">Calendar</h2>
               {currentDate && (
                 <Calendar
@@ -169,7 +169,7 @@ export default function TasksPage() {
                   selected={selectedDate}
                   onSelect={handleDateSelect}
                   defaultMonth={currentDate}
-                  className="rounded-md"
+                  className="mx-auto"
                   modifiers={{
                     today: (date) => isToday(date),
                     hasTasks: (date) => hasTasks(date),
@@ -183,7 +183,7 @@ export default function TasksPage() {
                           <span className="z-10">{date.getDate()}</span>
                           {taskCount > 0 && (
                             <div className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 z-20">
-                              <span className="bg-purple-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">
+                              <span className="bg-purple-500/80 backdrop-blur-sm text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold shadow-sm">
                                 {taskCount}
                               </span>
                             </div>
@@ -200,7 +200,7 @@ export default function TasksPage() {
 
           {/* Task List Section */}
           <div className="space-y-6">
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+            <div className="flex justify-between items-center">
               <h2 className="text-2xl font-bold text-white">Tasks</h2>
               <Button
                 onClick={() => {
@@ -208,7 +208,7 @@ export default function TasksPage() {
                   setEditingTask(null)
                   setIsModalOpen(true)
                 }}
-                className="bg-blue-600 text-white hover:bg-blue-700 shadow-md w-full sm:w-auto"
+                className="bg-blue-500 text-white hover:bg-blue-600"
               >
                 Add New Task
               </Button>
