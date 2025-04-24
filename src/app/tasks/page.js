@@ -169,7 +169,12 @@ export default function TasksPage() {
   // Function to get tasks for a specific date
   const getTasksForDate = (date) => {
     if (!date) return []
-    return tasks.filter(task => task.dueDate && isSameDay(new Date(task.dueDate), date))
+    // Only return active tasks (non-completed) for the specified date
+    return tasks.filter(task => 
+      task.dueDate && 
+      isSameDay(new Date(task.dueDate), date) && 
+      task.status !== 'completed'
+    )
   }
 
   // Function to check if a date has tasks

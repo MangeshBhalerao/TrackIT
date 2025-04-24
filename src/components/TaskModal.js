@@ -87,23 +87,6 @@ export default function TaskModal({ isOpen, onClose, selectedDate, onSubmit, ini
                 </SelectContent>
               </Select>
             </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="status" className="text-white">Status</Label>
-              <Select
-                value={task.status}
-                onValueChange={(value) => setTask({ ...task, status: value })}
-              >
-                <SelectTrigger className="bg-black border-zinc-800 text-white">
-                  <SelectValue placeholder="Select status" />
-                </SelectTrigger>
-                <SelectContent className="bg-black border-zinc-800 text-white">
-                  <SelectItem value="pending">Pending</SelectItem>
-                  <SelectItem value="in-progress">In Progress</SelectItem>
-                  <SelectItem value="completed">Completed</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
           </div>
 
           <div className="space-y-2">
@@ -129,7 +112,7 @@ export default function TaskModal({ isOpen, onClose, selectedDate, onSubmit, ini
             </Button>
             <Button
               type="submit"
-              className="bg-blue-600 text-white hover:bg-blue-700"
+              className="bg-gray-800/30 border-1 border-gray-800 text-white hover:bg-blue-900"
             >
               {initialTask ? 'Update Task' : 'Save Task'}
             </Button>
