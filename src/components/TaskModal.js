@@ -42,7 +42,7 @@ export default function TaskModal({ isOpen, onClose, selectedDate, onSubmit, ini
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="bg-slate-900 border border-slate-700 shadow-xl max-w-xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="bg-black border border-zinc-800 shadow-xl max-w-xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-white text-xl">
             {initialTask ? 'Edit Task' : 'Add New Task'}
@@ -55,7 +55,7 @@ export default function TaskModal({ isOpen, onClose, selectedDate, onSubmit, ini
               id="title"
               value={task.title}
               onChange={(e) => setTask({ ...task, title: e.target.value })}
-              className="bg-slate-800 border-slate-700 text-white"
+              className="bg-black border-zinc-800 text-white"
               required
             />
           </div>
@@ -66,21 +66,21 @@ export default function TaskModal({ isOpen, onClose, selectedDate, onSubmit, ini
               id="description"
               value={task.description || ''}
               onChange={(e) => setTask({ ...task, description: e.target.value })}
-              className="bg-slate-800 border-slate-700 text-white min-h-[100px]"
+              className="bg-black border-zinc-800 text-white min-h-[100px]"
             />
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
             <div className="space-y-2">
               <Label htmlFor="priority" className="text-white">Priority</Label>
               <Select
                 value={task.priority}
                 onValueChange={(value) => setTask({ ...task, priority: value })}
               >
-                <SelectTrigger className="bg-slate-800 border-slate-700 text-white">
+                <SelectTrigger className="bg-black border-zinc-800 text-white">
                   <SelectValue placeholder="Select priority" />
                 </SelectTrigger>
-                <SelectContent className="bg-slate-800 border-slate-700 text-white">
+                <SelectContent className="bg-black border-zinc-800 text-white">
                   <SelectItem value="low">Low</SelectItem>
                   <SelectItem value="medium">Medium</SelectItem>
                   <SelectItem value="high">High</SelectItem>
@@ -94,10 +94,10 @@ export default function TaskModal({ isOpen, onClose, selectedDate, onSubmit, ini
                 value={task.status}
                 onValueChange={(value) => setTask({ ...task, status: value })}
               >
-                <SelectTrigger className="bg-slate-800 border-slate-700 text-white">
+                <SelectTrigger className="bg-black border-zinc-800 text-white">
                   <SelectValue placeholder="Select status" />
                 </SelectTrigger>
-                <SelectContent className="bg-slate-800 border-slate-700 text-white">
+                <SelectContent className="bg-black border-zinc-800 text-white">
                   <SelectItem value="pending">Pending</SelectItem>
                   <SelectItem value="in-progress">In Progress</SelectItem>
                   <SelectItem value="completed">Completed</SelectItem>
@@ -108,7 +108,7 @@ export default function TaskModal({ isOpen, onClose, selectedDate, onSubmit, ini
 
           <div className="space-y-2">
             <Label htmlFor="dueDate" className="text-white">Due Date</Label>
-            <div className="border border-slate-700 bg-slate-800 rounded-md p-3">
+            <div className="border border-zinc-800 bg-black rounded-md p-3">
               <Calendar
                 mode="single"
                 selected={task.dueDate ? new Date(task.dueDate) : undefined}
@@ -118,12 +118,12 @@ export default function TaskModal({ isOpen, onClose, selectedDate, onSubmit, ini
             </div>
           </div>
 
-          <div className="flex justify-end space-x-4 pt-2">
+          <div className="flex flex-col sm:flex-row justify-end gap-3 sm:gap-4 pt-2">
             <Button
               type="button"
               variant="outline"
               onClick={onClose}
-              className="text-white border-slate-700 hover:bg-slate-800"
+              className="text-white border-zinc-800 bg-black hover:bg-zinc-900"
             >
               Cancel
             </Button>
