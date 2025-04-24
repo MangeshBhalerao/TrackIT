@@ -15,7 +15,7 @@ export default function RealTimeClock() {
   }, [])
 
   return (
-    <div className="bg-white/10 backdrop-blur-md border border-white/10 rounded-lg p-4">
+    <div className="bg-black/5 backdrop-blur-md border mb-4 border-white/10 rounded-lg p-4">
       <div className="text-center space-y-2">
         <div className="text-2xl font-bold text-white">
           {format(currentTime, 'h:mm:ss a')}
