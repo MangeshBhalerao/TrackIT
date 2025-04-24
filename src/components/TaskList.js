@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { format } from "date-fns"
 
-export default function TaskList({ tasks, onDelete, onEdit }) {
+export default function TaskList({ tasks, onDelete, onEdit, onComplete }) {
   const [filter, setFilter] = useState('all')
   const [sortBy, setSortBy] = useState('dueDate')
 
@@ -60,7 +60,9 @@ export default function TaskList({ tasks, onDelete, onEdit }) {
           sortedTasks.map((task) => (
             <div
               key={task.id}
-              className="bg-black border border-zinc-800 rounded-lg p-4 flex flex-col sm:flex-row justify-between gap-4 sm:items-center transition-all hover:border-zinc-700"
+              className={`bg-black border border-zinc-800 rounded-lg p-4 flex flex-col sm:flex-row justify-between gap-4 sm:items-center transition-all hover:border-zinc-700 ${
+                task.status === 'completed' ? 'border-l-4 border-l-green-600' : ''
+              }`}
             >
               <div className="space-y-1 flex-1">
                 <h3 className="text-white font-medium text-lg">{task.title}</h3>
@@ -85,7 +87,17 @@ export default function TaskList({ tasks, onDelete, onEdit }) {
                   </span>
                 </div>
               </div>
-              <div className="flex gap-2 justify-end">
+              <div className="flex flex-wrap gap-2 justify-end">
+                {task.status !== 'completed' && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => onComplete(task.id)}
+                    className="text-white border-zinc-800 bg-black hover:bg-green-950 hover:text-green-200"
+                  >
+                    Complete
+                  </Button>
+                )}
                 <Button
                   variant="outline"
                   size="sm"

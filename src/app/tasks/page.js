@@ -17,6 +17,7 @@ export default function TasksPage() {
   const [mounted, setMounted] = useState(false)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+  const [showCompleted, setShowCompleted] = useState(false)
 
   // Handle client-side mounting and initialization
   useEffect(() => {
@@ -113,8 +114,51 @@ export default function TasksPage() {
     }
   }
 
-  const handleTaskDelete = (taskId) => {
-    setTasks(tasks.filter(task => task.id !== taskId))
+  const handleTaskDelete = async (taskId) => {
+    try {
+      const response = await fetch(`/api/tasks/${taskId}`, {
+        method: 'DELETE',
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to delete task')
+      }
+
+      // Remove the task from state
+      setTasks(tasks.filter(task => task.id !== taskId))
+    } catch (err) {
+      console.error('Error deleting task:', err)
+      setError(err.message)
+    }
+  }
+
+  const handleTaskComplete = async (taskId) => {
+    try {
+      const response = await fetch(`/api/tasks/${taskId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: 'completed' }),
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to update task status')
+      }
+
+      const updatedTask = await response.json()
+
+      // Update the task in state
+      setTasks(tasks.map(task => 
+        task.id === taskId 
+          ? { 
+              ...task, 
+              status: 'completed' 
+            } 
+          : task
+      ))
+    } catch (err) {
+      console.error('Error completing task:', err)
+      setError(err.message)
+    }
   }
 
   const handleTaskEdit = (task) => {
@@ -140,6 +184,10 @@ export default function TasksPage() {
     return getTasksForDate(date).length
   }
 
+  // Separate active and completed tasks
+  const activeTasks = tasks.filter(task => task.status !== 'completed')
+  const completedTasks = tasks.filter(task => task.status === 'completed')
+
   if (!mounted) {
     return null
   }
@@ -157,67 +205,95 @@ export default function TasksPage() {
           <div className="text-white">Loading tasks...</div>
         </div>
       ) : (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Calendar Section */}
-          <div className="w-full">
-            <RealTimeClock />
-            <div className="bg-black border border-zinc-800 rounded-lg p-6 shadow-lg">
-              <h2 className="text-2xl font-bold text-white mb-4">Calendar</h2>
-              {currentDate && (
-                <Calendar
-                  mode="single"
-                  selected={selectedDate}
-                  onSelect={handleDateSelect}
-                  defaultMonth={currentDate}
-                  className="mx-auto"
-                  modifiers={{
-                    today: (date) => isToday(date),
-                    hasTasks: (date) => hasTasks(date),
-                    current: (date) => isSameDay(date, currentDate),
+        <div className="flex flex-col gap-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Calendar Section */}
+            <div className="w-full">
+              <RealTimeClock />
+              <div className="bg-black border border-zinc-800 rounded-lg p-6 shadow-lg">
+                <h2 className="text-2xl font-bold text-white mb-4">Calendar</h2>
+                {currentDate && (
+                  <Calendar
+                    mode="single"
+                    selected={selectedDate}
+                    onSelect={handleDateSelect}
+                    defaultMonth={currentDate}
+                    className="mx-auto"
+                    modifiers={{
+                      today: (date) => isToday(date),
+                      hasTasks: (date) => hasTasks(date),
+                      current: (date) => isSameDay(date, currentDate),
+                    }}
+                    components={{
+                      DayContent: ({ date, ...props }) => {
+                        const taskCount = getTaskCount(date)
+                        return (
+                          <div className="relative w-full h-full flex items-center justify-center">
+                            <span className="z-10">{date.getDate()}</span>
+                            {taskCount > 0 && (
+                              <div className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 z-20">
+                                <span className="bg-blue-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold shadow-sm">
+                                  {taskCount}
+                                </span>
+                              </div>
+                            )}
+                          </div>
+                        )
+                      }
+                    }}
+                    showOutsideDays={true}
+                  />
+                )}
+              </div>
+            </div>
+
+            {/* Task List Section */}
+            <div className="space-y-6 w-full">
+              <div className="flex justify-between items-center">
+                <h2 className="text-2xl font-bold text-white">Tasks</h2>
+                <Button
+                  onClick={() => {
+                    setSelectedDate(null)
+                    setEditingTask(null)
+                    setIsModalOpen(true)
                   }}
-                  components={{
-                    DayContent: ({ date, ...props }) => {
-                      const taskCount = getTaskCount(date)
-                      return (
-                        <div className="relative w-full h-full flex items-center justify-center">
-                          <span className="z-10">{date.getDate()}</span>
-                          {taskCount > 0 && (
-                            <div className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 z-20">
-                              <span className="bg-blue-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold shadow-sm">
-                                {taskCount}
-                              </span>
-                            </div>
-                          )}
-                        </div>
-                      )
-                    }
-                  }}
-                  showOutsideDays={true}
-                />
+                  className="bg-blue-600 text-white hover:bg-blue-700 transition-colors"
+                >
+                  Add New Task
+                </Button>
+              </div>
+              <TaskList
+                tasks={activeTasks}
+                onDelete={handleTaskDelete}
+                onEdit={handleTaskEdit}
+                onComplete={handleTaskComplete}
+              />
+              
+              {/* Completed Tasks Section */}
+              {completedTasks.length > 0 && (
+                <div className="space-y-4 mt-8">
+                  <div className="flex justify-between items-center">
+                    <h2 className="text-xl font-bold text-white">Completed Tasks</h2>
+                    <Button
+                      variant="outline"
+                      onClick={() => setShowCompleted(!showCompleted)}
+                      className="text-white border-zinc-800 bg-black hover:bg-zinc-900"
+                    >
+                      {showCompleted ? 'Hide' : 'Show'} ({completedTasks.length})
+                    </Button>
+                  </div>
+                  
+                  {showCompleted && (
+                    <TaskList
+                      tasks={completedTasks}
+                      onDelete={handleTaskDelete}
+                      onEdit={handleTaskEdit}
+                      onComplete={handleTaskComplete}
+                    />
+                  )}
+                </div>
               )}
             </div>
-          </div>
-
-          {/* Task List Section */}
-          <div className="space-y-6 w-full">
-            <div className="flex justify-between items-center">
-              <h2 className="text-2xl font-bold text-white">Tasks</h2>
-              <Button
-                onClick={() => {
-                  setSelectedDate(null)
-                  setEditingTask(null)
-                  setIsModalOpen(true)
-                }}
-                className="bg-gray-800/30 border-1 border-gray-800 text-white hover:bg-blue-900 transition-colors"
-              >
-                Add New Task
-              </Button>
-            </div>
-            <TaskList
-              tasks={tasks}
-              onDelete={handleTaskDelete}
-              onEdit={handleTaskEdit}
-            />
           </div>
         </div>
       )}

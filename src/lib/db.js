@@ -73,6 +73,25 @@ export async function getTasks() {
   return result;
 }
 
+export async function deleteTask(taskId) {
+  const result = await sql`
+    DELETE FROM tasks
+    WHERE id = ${taskId}
+    RETURNING *;
+  `;
+  return result[0];
+}
+
+export async function updateTaskStatus(taskId, status) {
+  const result = await sql`
+    UPDATE tasks
+    SET status = ${status}, updated_at = CURRENT_TIMESTAMP
+    WHERE id = ${taskId}
+    RETURNING *;
+  `;
+  return result[0];
+}
+
 // Fitness activities CRUD operations
 export async function createFitnessActivity(activityType, duration, caloriesBurned, notes) {
   const result = await sql`
