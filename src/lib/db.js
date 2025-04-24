@@ -27,30 +27,6 @@ export async function initDB() {
       );
     `;
 
-    // Create fitness_activities table
-    await sql`
-      CREATE TABLE IF NOT EXISTS fitness_activities (
-        id SERIAL PRIMARY KEY,
-        activity_type VARCHAR(100) NOT NULL,
-        duration INTEGER,
-        calories_burned INTEGER,
-        notes TEXT,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-      );
-    `;
-
-    // Create documents table
-    await sql`
-      CREATE TABLE IF NOT EXISTS documents (
-        id SERIAL PRIMARY KEY,
-        title VARCHAR(255) NOT NULL,
-        content TEXT,
-        category VARCHAR(100),
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-      );
-    `;
-
     console.log('Database tables initialized successfully');
   } catch (error) {
     console.error('Error initializing database:', error);
@@ -58,7 +34,7 @@ export async function initDB() {
   }
 }
 
-// Tasks CRUD operations
+// Task operations
 export async function createTask(title, description) {
   const result = await sql`
     INSERT INTO tasks (title, description)
@@ -69,7 +45,10 @@ export async function createTask(title, description) {
 }
 
 export async function getTasks() {
-  const result = await sql`SELECT * FROM tasks ORDER BY created_at DESC;`;
+  const result = await sql`
+    SELECT * FROM tasks 
+    ORDER BY created_at DESC;
+  `;
   return result;
 }
 
@@ -90,34 +69,4 @@ export async function updateTaskStatus(taskId, status) {
     RETURNING *;
   `;
   return result[0];
-}
-
-// Fitness activities CRUD operations
-export async function createFitnessActivity(activityType, duration, caloriesBurned, notes) {
-  const result = await sql`
-    INSERT INTO fitness_activities (activity_type, duration, calories_burned, notes)
-    VALUES (${activityType}, ${duration}, ${caloriesBurned}, ${notes})
-    RETURNING *;
-  `;
-  return result[0];
-}
-
-export async function getFitnessActivities() {
-  const result = await sql`SELECT * FROM fitness_activities ORDER BY created_at DESC;`;
-  return result;
-}
-
-// Documents CRUD operations
-export async function createDocument(title, content, category) {
-  const result = await sql`
-    INSERT INTO documents (title, content, category)
-    VALUES (${title}, ${content}, ${category})
-    RETURNING *;
-  `;
-  return result[0];
-}
-
-export async function getDocuments() {
-  const result = await sql`SELECT * FROM documents ORDER BY created_at DESC;`;
-  return result;
 } 
