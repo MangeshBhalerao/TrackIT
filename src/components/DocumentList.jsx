@@ -57,12 +57,12 @@ export default function DocumentList() {
 
   return (
     <div className="container mx-auto px-4 py-4">
-      <div className="flex justify-between items-center mb-8">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-8">
         <h1 className="text-2xl font-bold text-white">Documents</h1>
-        <div className="flex items-center gap-4">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" className="bg-black border-zinc-800 text-white hover:bg-zinc-900">
+              <Button variant="outline" className="w-full sm:w-auto bg-black border-zinc-800 text-white hover:bg-zinc-900">
                 {selectedCategory === 'all' ? 'All Categories' : selectedCategory.charAt(0).toUpperCase() + selectedCategory.slice(1)}
                 <ChevronDown className="ml-2 h-4 w-4" />
               </Button>
@@ -81,7 +81,7 @@ export default function DocumentList() {
           </DropdownMenu>
           <Button
             onClick={() => setIsUploadOpen(true)}
-            className="bg-gray-800/30 border border-zinc-800 hover:bg-zinc-700 text-white"
+            className="w-full sm:w-auto bg-gray-800/30 border border-zinc-800 hover:bg-zinc-700 text-white"
           >
             <Plus className="w-4 h-4 mr-2" />
             Upload Document
@@ -89,7 +89,7 @@ export default function DocumentList() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
         {filteredDocuments.map(document => (
           <DocumentCard
             key={document.id}
