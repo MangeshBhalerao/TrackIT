@@ -10,8 +10,8 @@ export default function DocumentsPage() {
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false)
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="space-y-6 pt-4">
+      <div className="flex items-center justify-between border-b border-zinc-300 pb-4">
         <div>
           <h1 className="text-2xl font-bold text-white">Documents</h1>
           <p className="text-zinc-400 mt-1">
@@ -20,7 +20,7 @@ export default function DocumentsPage() {
         </div>
         <Button
           onClick={() => setIsUploadModalOpen(true)}
-          className="bg-blue-500 hover:bg-blue-600 text-white"
+          className="bg-gray-800/30 border border-zinc-800 hover:bg-blue-600 text-white"
         >
           <Plus className="w-4 h-4 mr-2" />
           Upload Document
