@@ -15,13 +15,50 @@ const sql = neon(DATABASE_URL);
 // Initialize database tables
 export async function initDB() {
   try {
-    // Create tasks table
+    // Create users table
+    await sql`
+      CREATE TABLE IF NOT EXISTS users (
+        id SERIAL PRIMARY KEY,
+        google_id VARCHAR(255) UNIQUE NOT NULL,
+        email VARCHAR(255) UNIQUE NOT NULL,
+        name VARCHAR(255),
+        picture VARCHAR(255),
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `;
+
+    // Create tasks table with user_id
     await sql`
       CREATE TABLE IF NOT EXISTS tasks (
         id SERIAL PRIMARY KEY,
+        user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
         title VARCHAR(255) NOT NULL,
         description TEXT,
         status VARCHAR(50) DEFAULT 'pending',
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `;
+
+    // Create fitness_activities table
+    await sql`
+      CREATE TABLE IF NOT EXISTS fitness_activities (
+        id SERIAL PRIMARY KEY,
+        activity_type VARCHAR(100) NOT NULL,
+        duration INTEGER,
+        calories_burned INTEGER,
+        notes TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `;
+
+    // Create documents table
+    await sql`
+      CREATE TABLE IF NOT EXISTS documents (
+        id SERIAL PRIMARY KEY,
+        title VARCHAR(255) NOT NULL,
+        content TEXT,
+        category VARCHAR(100),
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
@@ -34,7 +71,28 @@ export async function initDB() {
   }
 }
 
-// Task operations
+// User operations
+export async function createUser(googleId, email, name, picture) {
+  const result = await sql`
+    INSERT INTO users (google_id, email, name, picture)
+    VALUES (${googleId}, ${email}, ${name}, ${picture})
+    ON CONFLICT (google_id) DO UPDATE
+    SET email = EXCLUDED.email,
+        name = EXCLUDED.name,
+        picture = EXCLUDED.picture
+    RETURNING *;
+  `;
+  return result[0];
+}
+
+export async function getUserByGoogleId(googleId) {
+  const result = await sql`
+    SELECT * FROM users WHERE google_id = ${googleId};
+  `;
+  return result[0];
+}
+
+// Modified task operations to include user_id
 export async function createTask(title, description) {
   const result = await sql`
     INSERT INTO tasks (title, description)
@@ -69,4 +127,34 @@ export async function updateTaskStatus(taskId, status) {
     RETURNING *;
   `;
   return result[0];
+}
+
+// Fitness activities CRUD operations
+export async function createFitnessActivity(activityType, duration, caloriesBurned, notes) {
+  const result = await sql`
+    INSERT INTO fitness_activities (activity_type, duration, calories_burned, notes)
+    VALUES (${activityType}, ${duration}, ${caloriesBurned}, ${notes})
+    RETURNING *;
+  `;
+  return result[0];
+}
+
+export async function getFitnessActivities() {
+  const result = await sql`SELECT * FROM fitness_activities ORDER BY created_at DESC;`;
+  return result;
+}
+
+// Documents CRUD operations
+export async function createDocument(title, content, category) {
+  const result = await sql`
+    INSERT INTO documents (title, content, category)
+    VALUES (${title}, ${content}, ${category})
+    RETURNING *;
+  `;
+  return result[0];
+}
+
+export async function getDocuments() {
+  const result = await sql`SELECT * FROM documents ORDER BY created_at DESC;`;
+  return result;
 } 
