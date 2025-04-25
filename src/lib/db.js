@@ -193,6 +193,15 @@ export async function getDocuments() {
   return result;
 }
 
+export async function getDocumentById(id) {
+  const result = await sql`
+    SELECT * FROM documents
+    WHERE id = ${id}
+    LIMIT 1;
+  `;
+  return result[0];
+}
+
 export async function deleteDocument(id) {
   const result = await sql`
     DELETE FROM documents

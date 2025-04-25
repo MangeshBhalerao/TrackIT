@@ -26,6 +26,10 @@ export default function DocumentsList() {
     }
   };
 
+  const handleDocumentDelete = (deletedId) => {
+    setDocuments(documents.filter(doc => doc.id !== deletedId));
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-48">
@@ -53,7 +57,11 @@ export default function DocumentsList() {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
       {documents.map((document) => (
-        <DocumentCard key={document.id} document={document} />
+        <DocumentCard 
+          key={document.id} 
+          document={document} 
+          onDelete={handleDocumentDelete}
+        />
       ))}
     </div>
   );

@@ -21,10 +21,17 @@ export default function DocumentUpload({ isOpen, onClose, onUploadComplete }) {
     try {
       const formData = new FormData();
       formData.append('file', file);
-      formData.append('upload_preset', 'TrackIT'); // Use the upload preset name you created
+      formData.append('upload_preset', 'TrackIT');
+      formData.append('resource_type', 'auto'); // Let Cloudinary detect the file type
+
+      console.log('Uploading to Cloudinary with:', {
+        cloudName: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME,
+        fileType: file.type,
+        fileName: file.name
+      });
 
       const response = await fetch(
-        `https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/auto/upload`,
+        `https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/upload`,
         {
           method: 'POST',
           body: formData,
@@ -32,10 +39,14 @@ export default function DocumentUpload({ isOpen, onClose, onUploadComplete }) {
       );
 
       if (!response.ok) {
-        throw new Error('Upload failed');
+        const errorData = await response.json();
+        console.error('Cloudinary upload error:', errorData);
+        throw new Error(errorData.error?.message || 'Upload failed');
       }
 
       const data = await response.json();
+      console.log('Cloudinary upload success:', data);
+
       return {
         url: data.secure_url,
         publicId: data.public_id,

@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata = {
-  title: "StudyTrack - Your Student Dashboard",
+  title: "TrackIT",
   description: "Manage your tasks, documents, and fitness all in one place",
 };
 

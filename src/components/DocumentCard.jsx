@@ -3,12 +3,39 @@ import {
   ImageIcon, 
   FileTextIcon, 
   FileSpreadsheetIcon, 
-  PresentationIcon 
+  PresentationIcon,
+  Trash2,
+  ExternalLink
 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
+import { toast } from 'react-hot-toast';
 
-export default function DocumentCard({ document }) {
-  const { title, category, file_url, file_type, created_at } = document;
+export default function DocumentCard({ document, onDelete }) {
+  const { id, title, category, file_url, file_type, created_at, public_id } = document;
+
+  const handleDelete = async () => {
+    if (!window.confirm('Are you sure you want to delete this document?')) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/documents/${id}`, {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to delete document');
+      }
+
+      toast.success('Document deleted successfully');
+      if (onDelete) {
+        onDelete(id);
+      }
+    } catch (error) {
+      console.error('Error deleting document:', error);
+      toast.error('Failed to delete document');
+    }
+  };
 
   const getFileIcon = () => {
     if (file_type.startsWith('image/')) {
@@ -26,6 +53,18 @@ export default function DocumentCard({ document }) {
       default:
         return <FileIcon className="w-6 h-6" />;
     }
+  };
+
+  const getViewUrl = () => {
+    if (file_type === 'application/pdf') {
+      // For PDFs, use the direct Cloudinary URL with the correct format
+      const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
+      // Extract the public ID from the file_url
+      const urlParts = file_url.split('/');
+      const publicIdWithExtension = urlParts.slice(-2).join('/');
+      return `https://res.cloudinary.com/${cloudName}/image/upload/${publicIdWithExtension}`;
+    }
+    return file_url;
   };
 
   const getThumbnailUrl = () => {
@@ -55,6 +94,7 @@ export default function DocumentCard({ document }) {
   };
 
   const thumbnailUrl = getThumbnailUrl();
+  const viewUrl = getViewUrl();
 
   return (
     <div className="bg-black border border-zinc-800 rounded-lg p-4 hover:border-zinc-700 transition-colors">
@@ -95,18 +135,27 @@ export default function DocumentCard({ document }) {
 
       <div className="mt-4 flex items-center justify-end space-x-2">
         <a
-          href={file_url}
+          href={viewUrl}
           target="_blank"
           rel="noopener noreferrer"
-          className="px-3 py-1 text-sm bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
+          className="px-3 py-1 text-sm bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors flex items-center gap-1"
         >
+          <ExternalLink className="w-4 h-4" />
           View
         </a>
-        <button
-          onClick={() => window.open(file_url, '_blank')}
+        <a
+          href={viewUrl}
+          download
           className="px-3 py-1 text-sm bg-zinc-800 text-white rounded hover:bg-zinc-700 transition-colors"
         >
           Download
+        </a>
+        <button
+          onClick={handleDelete}
+          className="px-3 py-1 text-sm bg-red-500/20 text-red-500 rounded hover:bg-red-500/30 transition-colors flex items-center gap-1"
+        >
+          <Trash2 className="w-4 h-4" />
+          Delete
         </button>
       </div>
     </div>

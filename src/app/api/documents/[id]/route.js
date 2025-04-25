@@ -1,6 +1,14 @@
 import { NextResponse } from 'next/server';
-import { deleteDocument } from '@/lib/db';
+import { deleteDocument, getDocuments } from '@/lib/db.js';
 import { deleteFile } from '@/lib/cloudinary';
+import { v2 as cloudinary } from 'cloudinary';
+
+// Configure Cloudinary
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET
+});
 
 export async function DELETE(request, { params }) {
   try {
@@ -13,16 +21,25 @@ export async function DELETE(request, { params }) {
       );
     }
 
-    // Get the document first to get the public_id
-    const response = await fetch(`${request.nextUrl.origin}/api/documents/${id}`);
-    if (!response.ok) {
-      throw new Error('Document not found');
+    // Get all documents and find the one we want to delete
+    const documents = await getDocuments();
+    const document = documents.find(doc => doc.id === parseInt(id));
+    
+    if (!document) {
+      return NextResponse.json(
+        { error: 'Document not found' },
+        { status: 404 }
+      );
     }
-    const document = await response.json();
 
-    // Delete from Cloudinary
+    // Delete from Cloudinary if public_id exists
     if (document.public_id) {
-      await deleteFile(document.public_id);
+      try {
+        await deleteFile(document.public_id);
+      } catch (cloudinaryError) {
+        console.error('Error deleting from Cloudinary:', cloudinaryError);
+        // Continue with database deletion even if Cloudinary deletion fails
+      }
     }
 
     // Delete from database
@@ -30,14 +47,17 @@ export async function DELETE(request, { params }) {
     
     if (!deletedDocument) {
       return NextResponse.json(
-        { error: 'Document not found' },
-        { status: 404 }
+        { error: 'Failed to delete document from database' },
+        { status: 500 }
       );
     }
     
     return NextResponse.json(deletedDocument);
   } catch (error) {
     console.error('Error deleting document:', error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json(
+      { error: 'Failed to delete document: ' + error.message },
+      { status: 500 }
+    );
   }
 } 
