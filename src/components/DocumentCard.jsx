@@ -98,10 +98,10 @@ export default function DocumentCard({ document, onDelete }) {
 
   return (
     <div className="bg-black border border-zinc-800 rounded-lg p-4 hover:border-zinc-700 transition-colors">
-      <div className="flex items-start space-x-4">
+      <div className="flex flex-col space-y-4">
         <div className="flex-shrink-0">
           {thumbnailUrl ? (
-            <div className="w-20 h-20 rounded-lg overflow-hidden bg-zinc-900">
+            <div className="w-full h-48 rounded-lg overflow-hidden bg-zinc-900">
               <img
                 src={thumbnailUrl}
                 alt={title}
@@ -116,7 +116,7 @@ export default function DocumentCard({ document, onDelete }) {
               </div>
             </div>
           ) : (
-            <div className="w-20 h-20 rounded-lg bg-zinc-900 flex items-center justify-center">
+            <div className="w-full h-48 rounded-lg bg-zinc-900 flex items-center justify-center">
               {getFileIcon()}
             </div>
           )}
@@ -131,32 +131,32 @@ export default function DocumentCard({ document, onDelete }) {
             Added {formatDistanceToNow(new Date(created_at))} ago
           </p>
         </div>
-      </div>
 
-      <div className="mt-4 flex items-center justify-end space-x-2">
-        <a
-          href={viewUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="px-3 py-1 text-sm bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors flex items-center gap-1"
-        >
-          <ExternalLink className="w-4 h-4" />
-          View
-        </a>
-        <a
-          href={viewUrl}
-          download
-          className="px-3 py-1 text-sm bg-zinc-800 text-white rounded hover:bg-zinc-700 transition-colors"
-        >
-          Download
-        </a>
-        <button
-          onClick={handleDelete}
-          className="px-3 py-1 text-sm bg-red-500/20 text-red-500 rounded hover:bg-red-500/30 transition-colors flex items-center gap-1"
-        >
-          <Trash2 className="w-4 h-4" />
-          Delete
-        </button>
+        <div className="flex items-center justify-end space-x-2">
+          <a
+            href={viewUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="px-3 py-1 text-sm bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors flex items-center gap-1"
+          >
+            <ExternalLink className="w-4 h-4" />
+            View
+          </a>
+          <a
+            href={viewUrl}
+            download
+            className="px-3 py-1 text-sm bg-zinc-800 text-white rounded hover:bg-zinc-700 transition-colors"
+          >
+            Download
+          </a>
+          <button
+            onClick={handleDelete}
+            className="px-3 py-1 text-sm bg-red-500/20 text-red-500 rounded hover:bg-red-500/30 transition-colors flex items-center gap-1"
+          >
+            <Trash2 className="w-4 h-4" />
+            Delete
+          </button>
+        </div>
       </div>
     </div>
   );

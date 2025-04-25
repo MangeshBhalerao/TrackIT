@@ -232,7 +232,7 @@ export default function DocumentUpload({ isOpen, onClose, onUploadComplete }) {
               <Button
                 onClick={handleUpload}
                 disabled={!file || uploading}
-                className="bg-blue-500 text-white hover:bg-blue-600"
+                className="bg-gray-800/30 text-white hover:bg-blue-600"
               >
                 {uploading ? 'Uploading...' : 'Upload Document'}
               </Button>
