@@ -52,13 +52,19 @@ export async function initDB() {
       );
     `;
 
-    // Create documents table
+    // Drop existing documents table if it exists
+    await sql`DROP TABLE IF EXISTS documents;`;
+
+    // Create documents table with correct column names
     await sql`
-      CREATE TABLE IF NOT EXISTS documents (
+      CREATE TABLE documents (
         id SERIAL PRIMARY KEY,
         title VARCHAR(255) NOT NULL,
-        content TEXT,
         category VARCHAR(100),
+        file_url VARCHAR(1000) NOT NULL,
+        file_type VARCHAR(50),
+        file_size BIGINT,
+        public_id VARCHAR(255),
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
@@ -145,16 +151,53 @@ export async function getFitnessActivities() {
 }
 
 // Documents CRUD operations
-export async function createDocument(title, content, category) {
-  const result = await sql`
-    INSERT INTO documents (title, content, category)
-    VALUES (${title}, ${content}, ${category})
-    RETURNING *;
-  `;
-  return result[0];
+export async function createDocument({ title, category, file_url, file_type, file_size, public_id }) {
+  console.log('Creating document with:', { title, category, file_url, file_type, file_size, public_id });
+  try {
+    const result = await sql`
+      INSERT INTO documents (
+        title,
+        category,
+        file_url,
+        file_type,
+        file_size,
+        public_id,
+        created_at,
+        updated_at
+      )
+      VALUES (
+        ${title},
+        ${category},
+        ${file_url},
+        ${file_type},
+        ${file_size},
+        ${public_id},
+        CURRENT_TIMESTAMP,
+        CURRENT_TIMESTAMP
+      )
+      RETURNING *;
+    `;
+    console.log('Document created:', result[0]);
+    return result[0];
+  } catch (error) {
+    console.error('Error creating document:', error);
+    throw error;
+  }
 }
 
 export async function getDocuments() {
-  const result = await sql`SELECT * FROM documents ORDER BY created_at DESC;`;
+  const result = await sql`
+    SELECT * FROM documents 
+    ORDER BY created_at DESC;
+  `;
   return result;
+}
+
+export async function deleteDocument(id) {
+  const result = await sql`
+    DELETE FROM documents
+    WHERE id = ${id}
+    RETURNING *;
+  `;
+  return result[0];
 } 
