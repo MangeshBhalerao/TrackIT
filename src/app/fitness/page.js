@@ -17,7 +17,8 @@ import {
   Utensils,
   Edit,
   Trash2,
-  UserCircle
+  UserCircle,
+  Menu
 } from 'lucide-react'
 import WorkoutModal from '@/components/WorkoutModal'
 import FoodEntryForm from '@/components/FoodEntryForm'
@@ -46,6 +47,7 @@ export default function FitnessPage() {
   const [isFoodModalOpen, setIsFoodModalOpen] = useState(false)
   const [todaysFoodEntries, setTodaysFoodEntries] = useState([])
   const [userProfile, setUserProfile] = useState(null)
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
   useEffect(() => {
     fetchWorkouts()
@@ -188,8 +190,17 @@ export default function FitnessPage() {
         throw new Error('Failed to delete workout')
       }
 
-      setWorkouts(workouts.filter(w => w.id !== workoutId))
-      fetchStats() // Refresh stats after workout deletion
+      // Animate removal with fade out and then update state
+      setWorkouts(prev => prev.map(w => 
+        w.id === workoutId ? { ...w, isDeleting: true } : w
+      ))
+      
+      // Wait for animation to complete
+      setTimeout(() => {
+        setWorkouts(workouts.filter(w => w.id !== workoutId))
+        fetchStats() // Refresh stats after workout deletion
+      }, 300)
+      
       toast.success('Workout deleted successfully')
     } catch (error) {
       console.error('Error deleting workout:', error)
@@ -226,15 +237,29 @@ export default function FitnessPage() {
   };
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="container mx-auto px-4 py-8 relative z-10">
       {/* Header Section */}
-      <div className="flex justify-between items-center mb-8">
-        <h1 className="text-3xl font-bold text-white">Fitness Tracking</h1>
-        <div className="flex gap-4">
+      <div className="flex flex-col sm:flex-row justify-between items-center mb-8 gap-4">
+        <h1 className="text-3xl font-bold text-white tracking-tight">
+          Fitness Tracking
+        </h1>
+        
+        {/* Mobile Menu Button */}
+        <div className="sm:hidden w-full flex justify-end">
           <Button 
             className="bg-gray-800/30 border border-zinc-800 hover:bg-zinc-700 text-white"
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+          >
+            <Menu className="h-4 w-4 mr-2" />
+            Menu
+          </Button>
+        </div>
+        
+        {/* Action Buttons */}
+        <div className={`flex flex-col sm:flex-row gap-3 w-full sm:w-auto ${mobileMenuOpen ? 'flex' : 'hidden sm:flex'}`}>
+          <Button 
+            className="bg-gray-800/30 border border-zinc-800 hover:bg-zinc-700 text-white transition-all duration-300 ease-in-out transform hover:scale-105"
             onClick={() => {
-              console.log('Add Food button clicked');
               setIsFoodModalOpen(true);
             }}
           >
@@ -242,15 +267,15 @@ export default function FitnessPage() {
             Add Food
           </Button>
           <Button 
-            className="bg-gray-800/30 border border-zinc-800 hover:bg-zinc-700 text-white"
+            className="bg-gray-800/30 border border-zinc-800 hover:bg-zinc-700 text-white transition-all duration-300 ease-in-out transform hover:scale-105"
             onClick={handleAddWorkout}
           >
             <Plus className="h-4 w-4 mr-2" />
             Add Workout
           </Button>
-          <Link href="/fitness/profile">
+          <Link href="/fitness/profile" className="w-full sm:w-auto">
             <Button 
-              className="bg-gray-800/30 border border-zinc-800 hover:bg-zinc-700 text-white"
+              className="bg-gray-800/30 border border-zinc-800 hover:bg-zinc-700 text-white w-full transition-all duration-300 ease-in-out transform hover:scale-105"
             >
               <UserCircle className="h-4 w-4 mr-2" />
               {userProfile ? 'My Profile' : 'Setup Profile'}
@@ -260,25 +285,30 @@ export default function FitnessPage() {
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-4 mb-6">
+      <div className="flex flex-wrap gap-2 mb-6 overflow-x-auto scrollbar-hide">
         <Button
           variant={activeTab === 'overview' ? 'default' : 'outline'}
           onClick={() => setActiveTab('overview')}
-          className="text-white"
+          className="text-white transition-all duration-200"
+          size="sm"
         >
+          <Activity className="h-4 w-4 mr-2" />
           Overview
         </Button>
         <Button
           variant={activeTab === 'workouts' ? 'default' : 'outline'}
           onClick={() => setActiveTab('workouts')}
-          className="text-white"
+          className="text-white transition-all duration-200"
+          size="sm"
         >
+          <Dumbbell className="h-4 w-4 mr-2" />
           Workouts
         </Button>
         <Button
           variant={activeTab === 'food' ? 'default' : 'outline'}
           onClick={() => setActiveTab('food')}
-          className="text-white"
+          className="text-white transition-all duration-200"
+          size="sm"
         >
           <Utensils className="h-4 w-4 mr-2" />
           Food
@@ -286,161 +316,187 @@ export default function FitnessPage() {
       </div>
 
       {/* Content */}
-      {activeTab === 'overview' && (
-        <div className="space-y-8">
-          {/* Progress Chart */}
-          {userProfile ? (
+      <div className="min-h-[70vh]">
+        {activeTab === 'overview' && (
+          <div className="space-y-8 animate-fadeIn">
+            {/* Progress Chart */}
+            {userProfile ? (
+              <div className="transition-all duration-500 ease-in-out transform hover:scale-[1.01]">
+                <CalorieProgressChart />
+              </div>
+            ) : (
+              <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-lg p-6 text-center py-12 shadow-lg transition-all duration-300 ease-in-out transform hover:scale-105">
+                <UserCircle className="h-12 w-12 text-white/50 mx-auto mb-4 animate-pulse" />
+                <h3 className="text-xl font-semibold text-white mb-2">Profile Not Set Up</h3>
+                <p className="text-white/70 mb-6">
+                  Set up your profile to get personalized calorie goals and track your progress
+                </p>
+                <Link href="/fitness/profile">
+                  <Button className="bg-blue-600 hover:bg-blue-700 transition-all duration-300 ease-in-out transform hover:scale-105">
+                    Set Up Profile
+                  </Button>
+                </Link>
+              </div>
+            )}
+            
+            {/* Recent Workouts */}
             <div>
-              <CalorieProgressChart />
+              <h2 className="text-xl font-semibold text-white mb-4 border-b border-white/10 pb-2">Recent Workouts</h2>
+              {isLoading ? (
+                <div className="flex justify-center items-center h-32">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
+                </div>
+              ) : workouts.length === 0 ? (
+                <div className="text-center py-8 text-gray-400 bg-white/5 backdrop-blur-sm border border-white/10 rounded-lg">
+                  No workouts yet. Add your first workout!
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {workouts.slice(0, 3).map(workout => (
+                    <div
+                      key={workout.id}
+                      className={`bg-white/5 backdrop-blur-sm border border-white/10 rounded-lg p-4 shadow-lg transition-all duration-300 ease-in-out transform hover:scale-105 ${workout.isDeleting ? 'opacity-0 scale-95' : 'opacity-100'}`}
+                    >
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <h3 className="text-lg font-semibold text-white">{workout.name}</h3>
+                          <p className="text-sm text-gray-400">{workout.type}</p>
+                        </div>
+                        <span className="text-sm text-gray-400 bg-gray-800/30 px-2 py-1 rounded-md">
+                          {new Date(workout.date).toLocaleDateString()}
+                        </span>
+                      </div>
+                      <div className="mt-4 flex justify-between text-sm">
+                        <span className="text-gray-400 flex items-center">
+                          <Timer className="h-4 w-4 mr-1" /> {workout.duration} min
+                        </span>
+                        <span className="text-white flex items-center">
+                          <Flame className="h-4 w-4 mr-1 text-orange-500" /> {workout.calories_burned} cal
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
-          ) : (
-            <div className="bg-white/5 border border-white/10 rounded-lg p-6 text-center py-12">
-              <UserCircle className="h-12 w-12 text-white/50 mx-auto mb-4" />
-              <h3 className="text-xl font-semibold text-white mb-2">Profile Not Set Up</h3>
-              <p className="text-white/70 mb-6">
-                Set up your profile to get personalized calorie goals and track your progress
-              </p>
-              <Link href="/fitness/profile">
-                <Button className="bg-blue-600 hover:bg-blue-700">
-                  Set Up Profile
-                </Button>
-              </Link>
-            </div>
-          )}
-          
-          {/* Recent Workouts */}
-          <div>
-            <h2 className="text-xl font-semibold text-white mb-4">Recent Workouts</h2>
+          </div>
+        )}
+
+        {activeTab === 'workouts' && (
+          <div className="space-y-8 animate-fadeIn">
             {isLoading ? (
               <div className="flex justify-center items-center h-32">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
               </div>
             ) : workouts.length === 0 ? (
-              <div className="text-center py-8 text-gray-400">
-                No workouts yet. Add your first workout!
+              <div className="text-center py-12 text-gray-400 bg-white/5 backdrop-blur-sm border border-white/10 rounded-lg">
+                <Dumbbell className="h-12 w-12 mx-auto mb-4 text-gray-500/50" />
+                <p className="text-xl font-medium mb-2">No workouts yet</p>
+                <p className="mb-6">Start tracking your fitness journey today</p>
+                <Button 
+                  className="bg-blue-600 hover:bg-blue-700"
+                  onClick={handleAddWorkout}
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add Your First Workout
+                </Button>
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {workouts.slice(0, 3).map(workout => (
+                {workouts.map(workout => (
                   <div
                     key={workout.id}
-                    className="bg-white/5 border border-white/10 rounded-lg p-4"
+                    className={`bg-white/5 backdrop-blur-sm border border-white/10 rounded-lg p-4 shadow-lg transition-all duration-300 ease-in-out ${workout.isDeleting ? 'opacity-0 scale-95' : 'opacity-100 hover:scale-[1.02]'}`}
                   >
                     <div className="flex justify-between items-start">
                       <div>
                         <h3 className="text-lg font-semibold text-white">{workout.name}</h3>
-                        <p className="text-sm text-gray-400">{workout.type}</p>
+                        <p className="text-sm text-gray-400 flex items-center">
+                          <Calendar className="h-3 w-3 mr-1" />
+                          {new Date(workout.date).toLocaleDateString()}
+                        </p>
                       </div>
-                      <span className="text-sm text-gray-400">
-                        {new Date(workout.date).toLocaleDateString()}
-                      </span>
+                      <div className="flex gap-2">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleEditWorkout(workout)}
+                          className="text-gray-400 hover:text-white transition-colors duration-200"
+                        >
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleDeleteWorkout(workout.id)}
+                          className="text-gray-400 hover:text-red-500 transition-colors duration-200"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
                     </div>
-                    <div className="mt-4 flex justify-between text-sm">
-                      <span className="text-gray-400">{workout.duration} min</span>
-                      <span className="text-white">{workout.calories_burned} cal</span>
+                    <div className="mt-4">
+                      <div className="flex items-center justify-between mb-2">
+                        <p className="text-sm text-gray-400">Exercises:</p>
+                        <span className="text-xs text-gray-500 bg-gray-800/40 px-2 py-1 rounded-full">{workout.type}</span>
+                      </div>
+                      <ul className="mt-2 space-y-2 max-h-[150px] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-transparent pr-2">
+                        {workout.exercises?.map((exercise, index) => (
+                          <li key={exercise.id || index} className="text-sm text-white flex items-center justify-between gap-2 bg-white/5 rounded-md p-2 group">
+                            <span className="truncate">
+                              {exercise.name} {exercise.sets ? `- ${exercise.sets} × ${exercise.reps}` : ''}
+                              {exercise.duration ? `- ${exercise.duration} min` : ''}
+                              {exercise.weight && ` @ ${exercise.weight}kg`}
+                            </span>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => handleDeleteExercise(exercise.id)}
+                              className="text-gray-500 opacity-0 group-hover:opacity-100 hover:text-red-500 transition-all duration-200"
+                              title="Delete Exercise"
+                            >
+                              <Trash2 className="h-3 w-3" />
+                            </Button>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                    <div className="mt-4 flex justify-between text-sm pt-2 border-t border-white/10">
+                      <span className="text-gray-400 flex items-center">
+                        <Timer className="h-4 w-4 mr-1" /> {workout.duration} min
+                      </span>
+                      <span className="text-white flex items-center">
+                        <Flame className="h-4 w-4 mr-1 text-orange-500" /> {workout.calories_burned} cal
+                      </span>
                     </div>
                   </div>
                 ))}
               </div>
             )}
           </div>
-        </div>
-      )}
+        )}
 
-      {activeTab === 'workouts' && (
-        <div className="space-y-8">
-          {isLoading ? (
-            <div className="flex justify-center items-center h-32">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
+        {activeTab === 'food' && (
+          <div className="space-y-8 animate-fadeIn">
+            <div className="flex justify-between items-center">
+              <h2 className="text-xl font-semibold text-white mb-4 border-b border-white/10 pb-2">Food Tracking</h2>
+              <Button 
+                className="bg-gray-800/30 border border-zinc-800 hover:bg-zinc-700 text-white transition-all duration-300 ease-in-out transform hover:scale-105"
+                onClick={() => {
+                  setIsFoodModalOpen(true);
+                }}
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Add Food
+              </Button>
             </div>
-          ) : workouts.length === 0 ? (
-            <div className="text-center py-8 text-gray-400">
-              No workouts yet. Add your first workout!
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {workouts.map(workout => (
-                <div
-                  key={workout.id}
-                  className="bg-white/5 border border-white/10 rounded-lg p-4"
-                >
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <h3 className="text-lg font-semibold text-white">{workout.name}</h3>
-                      <p className="text-sm text-gray-400">{workout.type}</p>
-                    </div>
-                    <div className="flex gap-2">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => handleEditWorkout(workout)}
-                        className="text-gray-400 hover:text-white"
-                      >
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => handleDeleteWorkout(workout.id)}
-                        className="text-gray-400 hover:text-red-500"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </div>
-                  <div className="mt-4">
-                    <p className="text-sm text-gray-400">Exercises:</p>
-                    <ul className="mt-2 space-y-2">
-                      {workout.exercises?.map((exercise, index) => (
-                        <li key={exercise.id || index} className="text-sm text-white flex items-center gap-2">
-                          {exercise.name} {exercise.sets ? `- ${exercise.sets} sets × ${exercise.reps}` : ''}
-                          {exercise.duration ? `- ${exercise.duration} min` : ''}
-                          {exercise.weight && ` @ ${exercise.weight}kg`}
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => handleDeleteExercise(exercise.id)}
-                            className="text-gray-400 hover:text-red-500"
-                            title="Delete Exercise"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                  <div className="mt-4 flex justify-between text-sm">
-                    <span className="text-gray-400">{workout.duration} min</span>
-                    <span className="text-white">{workout.calories_burned} cal</span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      )}
 
-      {activeTab === 'food' && (
-        <div className="space-y-8">
-          <div className="flex justify-between items-center">
-            <h2 className="text-xl font-semibold text-white">Food Tracking</h2>
-            <Button 
-              className="bg-gray-800/30 border border-zinc-800 hover:bg-zinc-700 text-white"
-              onClick={() => {
-                console.log('Add Food button clicked');
-                setIsFoodModalOpen(true);
-              }}
-            >
-              <Plus className="h-4 w-4 mr-2" />
-              Add Food
-            </Button>
+            <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-lg p-6 shadow-lg">
+              <FoodList />
+            </div>
           </div>
-
-          <div className="bg-white/5 border border-white/10 rounded-lg p-6">
-            <FoodList />
-          </div>
-        </div>
-      )}
+        )}
+      </div>
 
       <WorkoutModal
         isOpen={isWorkoutModalOpen}
@@ -451,7 +507,7 @@ export default function FitnessPage() {
 
       {/* Food Entry Modal - always mounted */}
       <Dialog open={isFoodModalOpen} onOpenChange={setIsFoodModalOpen}>
-        <DialogContent className="bg-black border-zinc-800 text-white">
+        <DialogContent className="bg-black/90 backdrop-blur-md border-zinc-800 text-white">
           <DialogHeader>
             <DialogTitle>Add Food Entry</DialogTitle>
             <DialogDescription>
