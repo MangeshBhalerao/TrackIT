@@ -213,6 +213,7 @@ export default function DocumentUpload({ isOpen, onClose, onUploadComplete }) {
                   <SelectItem value="contracts">Contracts</SelectItem>
                   <SelectItem value="reports">Reports</SelectItem>
                   <SelectItem value="presentations">Presentations</SelectItem>
+                  <SelectItem value="documents">Documents</SelectItem>
                 </SelectContent>
               </Select>
             </div>
