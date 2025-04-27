@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { 
@@ -13,99 +13,127 @@ import {
   Plus,
   Calendar,
   Target,
-  Users
+  Users,
+  Utensils,
+  Edit,
+  Trash2,
+  UserCircle
 } from 'lucide-react'
 import WorkoutModal from '@/components/WorkoutModal'
+import FoodEntryForm from '@/components/FoodEntryForm'
+import FoodList from '@/components/FoodList'
+import CalorieProgressChart from '@/components/CalorieProgressChart'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
+import { toast } from 'react-hot-toast'
+import { format } from 'date-fns'
+import Link from 'next/link'
+import React from 'react'
 
 export default function FitnessPage() {
   const [activeTab, setActiveTab] = useState('overview')
   const [isWorkoutModalOpen, setIsWorkoutModalOpen] = useState(false)
   const [editingWorkout, setEditingWorkout] = useState(null)
-  const [workouts, setWorkouts] = useState([
-    {
-      id: 1,
-      name: 'Morning Cardio',
-      duration: '30 min',
-      calories: 320,
-      type: 'Cardio',
-      date: 'Today',
-      exercises: [
-        { name: 'Running', sets: 1, reps: '30 min', weight: '' },
-        { name: 'Jump Rope', sets: 3, reps: '100', weight: '' }
-      ]
-    },
-    {
-      id: 2,
-      name: 'Strength Training',
-      duration: '45 min',
-      calories: 450,
-      type: 'Strength',
-      date: 'Yesterday',
-      exercises: [
-        { name: 'Bench Press', sets: 3, reps: '12', weight: '60' },
-        { name: 'Squats', sets: 4, reps: '10', weight: '80' }
-      ]
-    },
-    {
-      id: 3,
-      name: 'Yoga Flow',
-      duration: '60 min',
-      calories: 280,
-      type: 'Flexibility',
-      date: '2 days ago',
-      exercises: [
-        { name: 'Sun Salutations', sets: 3, reps: '10', weight: '' },
-        { name: 'Warrior Poses', sets: 2, reps: '30 sec', weight: '' }
-      ]
-    }
-  ])
+  const [workouts, setWorkouts] = useState([])
+  const [stats, setStats] = useState({
+    calories: 0,
+    steps: 0,
+    workouts: 0,
+    waterIntake: 0,
+    activeMinutes: 0,
+    heartRate: 0
+  })
+  const [isLoading, setIsLoading] = useState(true)
+  const [isFoodModalOpen, setIsFoodModalOpen] = useState(false)
+  const [todaysFoodEntries, setTodaysFoodEntries] = useState([])
+  const [userProfile, setUserProfile] = useState(null)
 
-  // Mock data for demonstration
-  const stats = {
-    calories: 2500,
-    steps: 8500,
-    workouts: workouts.length,
-    waterIntake: 2.5,
-    activeMinutes: 45,
-    heartRate: 72
+  useEffect(() => {
+    fetchWorkouts()
+    fetchStats()
+    fetchTodaysFoodEntries()
+    fetchUserProfile()
+  }, [])
+
+  const fetchWorkouts = async () => {
+    try {
+      const response = await fetch('/api/fitness/workouts?userId=1') // TODO: Get actual user ID
+      if (!response.ok) {
+        throw new Error('Failed to fetch workouts')
+      }
+      const data = await response.json()
+      setWorkouts(data)
+    } catch (error) {
+      console.error('Error fetching workouts:', error)
+      toast.error('Failed to fetch workouts')
+    } finally {
+      setIsLoading(false)
+    }
   }
 
-  const recentWorkouts = [
-    {
-      id: 1,
-      name: 'Morning Cardio',
-      duration: '30 min',
-      calories: 320,
-      type: 'Cardio',
-      date: 'Today'
-    },
-    {
-      id: 2,
-      name: 'Strength Training',
-      duration: '45 min',
-      calories: 450,
-      type: 'Strength',
-      date: 'Yesterday'
-    },
-    {
-      id: 3,
-      name: 'Yoga Flow',
-      duration: '60 min',
-      calories: 280,
-      type: 'Flexibility',
-      date: '2 days ago'
+  const fetchStats = async () => {
+    try {
+      const response = await fetch('/api/fitness/stats?userId=1') // TODO: Get actual user ID
+      if (!response.ok) {
+        throw new Error('Failed to fetch stats')
+      }
+      const data = await response.json()
+      // If data is empty or not an array, provide default empty stats
+      if (!data || !Array.isArray(data) || data.length === 0) {
+        setStats({
+          calories: 0,
+          steps: 0,
+          workouts: 0,
+          waterIntake: 0,
+          activeMinutes: 0,
+          heartRate: 0
+        })
+      } else {
+        setStats(data)
+      }
+    } catch (error) {
+      console.error('Error fetching stats:', error)
+      toast.error('Failed to fetch stats')
+      // Set default stats on error
+      setStats({
+        calories: 0,
+        steps: 0,
+        workouts: 0,
+        waterIntake: 0,
+        activeMinutes: 0,
+        heartRate: 0
+      })
     }
-  ]
+  }
 
-  const weeklyProgress = [
-    { day: 'Mon', calories: 2200, steps: 8000 },
-    { day: 'Tue', calories: 2400, steps: 8500 },
-    { day: 'Wed', calories: 2300, steps: 8200 },
-    { day: 'Thu', calories: 2500, steps: 9000 },
-    { day: 'Fri', calories: 2600, steps: 8800 },
-    { day: 'Sat', calories: 2800, steps: 10000 },
-    { day: 'Sun', calories: 2500, steps: 8500 }
-  ]
+  const fetchTodaysFoodEntries = async () => {
+    try {
+      const today = format(new Date(), 'yyyy-MM-dd')
+      const response = await fetch(`/api/fitness/food?userId=1`) // TODO: Get actual user ID
+      if (!response.ok) {
+        throw new Error('Failed to fetch food entries')
+      }
+      const data = await response.json()
+      // Filter for today's entries
+      const todaysEntries = data.filter(entry => entry.date && entry.date.startsWith(today))
+      setTodaysFoodEntries(todaysEntries)
+    } catch (error) {
+      console.error('Error fetching today\'s food entries:', error)
+    }
+  }
+
+  const fetchUserProfile = async () => {
+    try {
+      const response = await fetch('/api/fitness/profile?userId=1') // TODO: Get actual user ID
+      if (response.ok) {
+        const data = await response.json()
+        if (data && data.id) {
+          setUserProfile(data)
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching user profile:', error)
+    }
+  }
 
   const handleAddWorkout = () => {
     setEditingWorkout(null)
@@ -117,112 +145,117 @@ export default function FitnessPage() {
     setIsWorkoutModalOpen(true)
   }
 
-  const handleWorkoutSubmit = (workoutData) => {
-    if (editingWorkout) {
-      setWorkouts(workouts.map(w => 
-        w.id === editingWorkout.id 
-          ? { ...workoutData, id: editingWorkout.id, date: 'Today' }
-          : w
-      ))
-    } else {
-      setWorkouts([...workouts, {
-        ...workoutData,
-        id: Date.now(),
-        date: 'Today'
-      }])
+  const handleWorkoutSubmit = async (workoutData) => {
+    try {
+      const response = await fetch('/api/fitness/workouts', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userId: 1, // TODO: Get actual user ID
+          workoutData
+        }),
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to save workout')
+      }
+
+      const data = await response.json()
+      if (editingWorkout) {
+        setWorkouts(workouts.map(w => 
+          w.id === editingWorkout.id ? data : w
+        ))
+      } else {
+        setWorkouts([data, ...workouts])
+      }
+      fetchStats() // Refresh stats after workout update
+      toast.success('Workout saved successfully')
+    } catch (error) {
+      console.error('Error saving workout:', error)
+      toast.error('Failed to save workout')
     }
   }
 
-  const handleDeleteWorkout = (workoutId) => {
-    setWorkouts(workouts.filter(w => w.id !== workoutId))
+  const handleDeleteWorkout = async (workoutId) => {
+    try {
+      const response = await fetch(`/api/fitness/workouts/${workoutId}`, {
+        method: 'DELETE',
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to delete workout')
+      }
+
+      setWorkouts(workouts.filter(w => w.id !== workoutId))
+      fetchStats() // Refresh stats after workout deletion
+      toast.success('Workout deleted successfully')
+    } catch (error) {
+      console.error('Error deleting workout:', error)
+      toast.error('Failed to delete workout')
+    }
   }
+
+  const handleFoodAdded = () => {
+    fetchStats() // Refresh stats after food entry
+    fetchTodaysFoodEntries() // Refresh today's food entries
+    toast.success('Food entry added successfully')
+  }
+
+  // Add a function to delete a workout exercise
+  const handleDeleteExercise = async (exerciseId) => {
+    try {
+      const response = await fetch(`/api/fitness/workout-exercises/${exerciseId}`, {
+        method: 'DELETE',
+      });
+      if (!response.ok) {
+        throw new Error('Failed to delete exercise');
+      }
+      // Optimistically update UI
+      setWorkouts(prevWorkouts => prevWorkouts.map(workout => ({
+        ...workout,
+        exercises: workout.exercises?.filter(ex => ex.id !== exerciseId)
+      })));
+      fetchWorkouts(); // Full refresh after deletion
+      toast.success('Exercise deleted successfully');
+    } catch (error) {
+      console.error('Error deleting exercise:', error);
+      toast.error('Failed to delete exercise');
+    }
+  };
 
   return (
     <div className="container mx-auto px-4 py-8">
       {/* Header Section */}
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-3xl font-bold text-white">Fitness Tracking</h1>
-        <Button 
-          className="bg-blue-500 text-white hover:bg-blue-600"
-          onClick={handleAddWorkout}
-        >
-          <Plus className="h-4 w-4 mr-2" />
-          Add Workout
-        </Button>
-      </div>
-
-      {/* Stats Overview */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
-        <div className="bg-white/5 border border-white/10 rounded-lg p-6">
-          <div className="flex items-center gap-4">
-            <div className="p-3 bg-blue-500/20 rounded-lg">
-              <Flame className="h-6 w-6 text-blue-500" />
-            </div>
-            <div>
-              <p className="text-white/70 text-sm">Calories Burned</p>
-              <h3 className="text-2xl font-bold text-white">{stats.calories}</h3>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white/5 border border-white/10 rounded-lg p-6">
-          <div className="flex items-center gap-4">
-            <div className="p-3 bg-green-500/20 rounded-lg">
-              <Activity className="h-6 w-6 text-green-500" />
-            </div>
-            <div>
-              <p className="text-white/70 text-sm">Steps</p>
-              <h3 className="text-2xl font-bold text-white">{stats.steps}</h3>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white/5 border border-white/10 rounded-lg p-6">
-          <div className="flex items-center gap-4">
-            <div className="p-3 bg-purple-500/20 rounded-lg">
-              <Dumbbell className="h-6 w-6 text-purple-500" />
-            </div>
-            <div>
-              <p className="text-white/70 text-sm">Workouts</p>
-              <h3 className="text-2xl font-bold text-white">{stats.workouts}</h3>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white/5 border border-white/10 rounded-lg p-6">
-          <div className="flex items-center gap-4">
-            <div className="p-3 bg-cyan-500/20 rounded-lg">
-              <Timer className="h-6 w-6 text-cyan-500" />
-            </div>
-            <div>
-              <p className="text-white/70 text-sm">Active Minutes</p>
-              <h3 className="text-2xl font-bold text-white">{stats.activeMinutes}</h3>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white/5 border border-white/10 rounded-lg p-6">
-          <div className="flex items-center gap-4">
-            <div className="p-3 bg-red-500/20 rounded-lg">
-              <Heart className="h-6 w-6 text-red-500" />
-            </div>
-            <div>
-              <p className="text-white/70 text-sm">Heart Rate</p>
-              <h3 className="text-2xl font-bold text-white">{stats.heartRate} bpm</h3>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white/5 border border-white/10 rounded-lg p-6">
-          <div className="flex items-center gap-4">
-            <div className="p-3 bg-yellow-500/20 rounded-lg">
-              <TrendingUp className="h-6 w-6 text-yellow-500" />
-            </div>
-            <div>
-              <p className="text-white/70 text-sm">Water Intake</p>
-              <h3 className="text-2xl font-bold text-white">{stats.waterIntake}L</h3>
-            </div>
-          </div>
+        <div className="flex gap-4">
+          <Button 
+            className="bg-gray-800/30 border border-zinc-800 hover:bg-zinc-700 text-white"
+            onClick={() => {
+              console.log('Add Food button clicked');
+              setIsFoodModalOpen(true);
+            }}
+          >
+            <Utensils className="h-4 w-4 mr-2" />
+            Add Food
+          </Button>
+          <Button 
+            className="bg-gray-800/30 border border-zinc-800 hover:bg-zinc-700 text-white"
+            onClick={handleAddWorkout}
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            Add Workout
+          </Button>
+          <Link href="/fitness/profile">
+            <Button 
+              className="bg-gray-800/30 border border-zinc-800 hover:bg-zinc-700 text-white"
+            >
+              <UserCircle className="h-4 w-4 mr-2" />
+              {userProfile ? 'My Profile' : 'Setup Profile'}
+            </Button>
+          </Link>
         </div>
       </div>
 
@@ -243,136 +276,168 @@ export default function FitnessPage() {
           Workouts
         </Button>
         <Button
-          variant={activeTab === 'progress' ? 'default' : 'outline'}
-          onClick={() => setActiveTab('progress')}
+          variant={activeTab === 'food' ? 'default' : 'outline'}
+          onClick={() => setActiveTab('food')}
           className="text-white"
         >
-          Progress
+          <Utensils className="h-4 w-4 mr-2" />
+          Food
         </Button>
       </div>
 
-      {/* Content based on active tab */}
+      {/* Content */}
       {activeTab === 'overview' && (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="space-y-8">
+          {/* Progress Chart */}
+          {userProfile ? (
+            <div>
+              <CalorieProgressChart />
+            </div>
+          ) : (
+            <div className="bg-white/5 border border-white/10 rounded-lg p-6 text-center py-12">
+              <UserCircle className="h-12 w-12 text-white/50 mx-auto mb-4" />
+              <h3 className="text-xl font-semibold text-white mb-2">Profile Not Set Up</h3>
+              <p className="text-white/70 mb-6">
+                Set up your profile to get personalized calorie goals and track your progress
+              </p>
+              <Link href="/fitness/profile">
+                <Button className="bg-blue-600 hover:bg-blue-700">
+                  Set Up Profile
+                </Button>
+              </Link>
+            </div>
+          )}
+          
           {/* Recent Workouts */}
-          <div className="bg-white/5 border border-white/10 rounded-lg p-6">
+          <div>
             <h2 className="text-xl font-semibold text-white mb-4">Recent Workouts</h2>
-            <div className="space-y-4">
-              {workouts.map((workout) => (
-                <div
-                  key={workout.id}
-                  className="flex items-center justify-between bg-white/5 rounded-lg p-4"
-                >
-                  <div>
-                    <h3 className="text-white font-medium">{workout.name}</h3>
-                    <p className="text-sm text-white/70">
-                      {workout.duration} • {workout.calories} calories
-                    </p>
-                  </div>
-                  <div className="text-right">
-                    <span className="text-sm text-white/70">{workout.date}</span>
-                    <p className="text-sm text-blue-500">{workout.type}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Weekly Progress */}
-          <div className="bg-white/5 border border-white/10 rounded-lg p-6">
-            <h2 className="text-xl font-semibold text-white mb-4">Weekly Progress</h2>
-            <div className="space-y-4">
-              {weeklyProgress.map((day, index) => (
-                <div key={index} className="flex items-center gap-4">
-                  <div className="w-12 text-white/70">{day.day}</div>
-                  <div className="flex-1">
-                    <div className="h-2 bg-white/10 rounded-full">
-                      <div
-                        className="h-full bg-blue-500 rounded-full"
-                        style={{ width: `${(day.calories / 3000) * 100}%` }}
-                      />
+            {isLoading ? (
+              <div className="flex justify-center items-center h-32">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
+              </div>
+            ) : workouts.length === 0 ? (
+              <div className="text-center py-8 text-gray-400">
+                No workouts yet. Add your first workout!
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {workouts.slice(0, 3).map(workout => (
+                  <div
+                    key={workout.id}
+                    className="bg-white/5 border border-white/10 rounded-lg p-4"
+                  >
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <h3 className="text-lg font-semibold text-white">{workout.name}</h3>
+                        <p className="text-sm text-gray-400">{workout.type}</p>
+                      </div>
+                      <span className="text-sm text-gray-400">
+                        {new Date(workout.date).toLocaleDateString()}
+                      </span>
                     </div>
-                    <div className="flex justify-between text-sm text-white/70 mt-1">
-                      <span>{day.calories} cal</span>
-                      <span>{day.steps} steps</span>
+                    <div className="mt-4 flex justify-between text-sm">
+                      <span className="text-gray-400">{workout.duration} min</span>
+                      <span className="text-white">{workout.calories_burned} cal</span>
                     </div>
                   </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       )}
 
       {activeTab === 'workouts' && (
-        <div className="bg-white/5 border border-white/10 rounded-lg p-6">
-          <h2 className="text-xl font-semibold text-white mb-4">Workout Library</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {workouts.map((workout) => (
-              <div
-                key={workout.id}
-                className="bg-white/5 rounded-lg p-4 cursor-pointer hover:bg-white/10 transition-colors"
-                onClick={() => handleEditWorkout(workout)}
-              >
-                <div className="flex items-center gap-4 mb-4">
-                  <div className="p-2 bg-blue-500/20 rounded-lg">
-                    <Dumbbell className="h-6 w-6 text-blue-500" />
+        <div className="space-y-8">
+          {isLoading ? (
+            <div className="flex justify-center items-center h-32">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
+            </div>
+          ) : workouts.length === 0 ? (
+            <div className="text-center py-8 text-gray-400">
+              No workouts yet. Add your first workout!
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {workouts.map(workout => (
+                <div
+                  key={workout.id}
+                  className="bg-white/5 border border-white/10 rounded-lg p-4"
+                >
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <h3 className="text-lg font-semibold text-white">{workout.name}</h3>
+                      <p className="text-sm text-gray-400">{workout.type}</p>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleEditWorkout(workout)}
+                        className="text-gray-400 hover:text-white"
+                      >
+                        <Edit className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleDeleteWorkout(workout.id)}
+                        className="text-gray-400 hover:text-red-500"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </div>
-                  <h3 className="text-white font-medium">{workout.name}</h3>
+                  <div className="mt-4">
+                    <p className="text-sm text-gray-400">Exercises:</p>
+                    <ul className="mt-2 space-y-2">
+                      {workout.exercises?.map((exercise, index) => (
+                        <li key={exercise.id || index} className="text-sm text-white flex items-center gap-2">
+                          {exercise.name} {exercise.sets ? `- ${exercise.sets} sets × ${exercise.reps}` : ''}
+                          {exercise.duration ? `- ${exercise.duration} min` : ''}
+                          {exercise.weight && ` @ ${exercise.weight}kg`}
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => handleDeleteExercise(exercise.id)}
+                            className="text-gray-400 hover:text-red-500"
+                            title="Delete Exercise"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                  <div className="mt-4 flex justify-between text-sm">
+                    <span className="text-gray-400">{workout.duration} min</span>
+                    <span className="text-white">{workout.calories_burned} cal</span>
+                  </div>
                 </div>
-                <p className="text-sm text-white/70 mb-4">
-                  {workout.type} • {workout.duration} • {workout.calories} calories
-                </p>
-                <div className="flex items-center gap-4 text-sm text-white/70">
-                  <span>{workout.exercises.length} exercises</span>
-                  <span>•</span>
-                  <span>{workout.date}</span>
-                </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </div>
       )}
 
-      {activeTab === 'progress' && (
-        <div className="bg-white/5 border border-white/10 rounded-lg p-6">
-          <h2 className="text-xl font-semibold text-white mb-4">Progress Tracking</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Weight Progress */}
-            <div>
-              <h3 className="text-white font-medium mb-4">Weight Progress</h3>
-              <div className="h-64 bg-white/5 rounded-lg p-4">
-                {/* Add weight chart here */}
-                <p className="text-white/70">Weight tracking chart will be displayed here</p>
-              </div>
-            </div>
+      {activeTab === 'food' && (
+        <div className="space-y-8">
+          <div className="flex justify-between items-center">
+            <h2 className="text-xl font-semibold text-white">Food Tracking</h2>
+            <Button 
+              className="bg-gray-800/30 border border-zinc-800 hover:bg-zinc-700 text-white"
+              onClick={() => {
+                console.log('Add Food button clicked');
+                setIsFoodModalOpen(true);
+              }}
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Add Food
+            </Button>
+          </div>
 
-            {/* Body Measurements */}
-            <div>
-              <h3 className="text-white font-medium mb-4">Body Measurements</h3>
-              <div className="space-y-4">
-                <div className="flex justify-between items-center bg-white/5 rounded-lg p-4">
-                  <span className="text-white/70">Chest</span>
-                  <span className="text-white">40&quot;</span>
-                </div>
-                <div className="flex justify-between items-center bg-white/5 rounded-lg p-4">
-                  <span className="text-white/70">Waist</span>
-                  <span className="text-white">32&quot;</span>
-                </div>
-                <div className="flex justify-between items-center bg-white/5 rounded-lg p-4">
-                  <span className="text-white/70">Hips</span>
-                  <span className="text-white">38&quot;</span>
-                </div>
-                <div className="flex justify-between items-center bg-white/5 rounded-lg p-4">
-                  <span className="text-white/70">Arms</span>
-                  <span className="text-white">14&quot;</span>
-                </div>
-                <div className="flex justify-between items-center bg-white/5 rounded-lg p-4">
-                  <span className="text-white/70">Legs</span>
-                  <span className="text-white">22&quot;</span>
-                </div>
-              </div>
-            </div>
+          <div className="bg-white/5 border border-white/10 rounded-lg p-6">
+            <FoodList />
           </div>
         </div>
       )}
@@ -381,8 +446,26 @@ export default function FitnessPage() {
         isOpen={isWorkoutModalOpen}
         onClose={() => setIsWorkoutModalOpen(false)}
         onSubmit={handleWorkoutSubmit}
-        initialWorkout={editingWorkout}
+        workout={editingWorkout}
       />
+
+      {/* Food Entry Modal - always mounted */}
+      <Dialog open={isFoodModalOpen} onOpenChange={setIsFoodModalOpen}>
+        <DialogContent className="bg-black border-zinc-800 text-white">
+          <DialogHeader>
+            <DialogTitle>Add Food Entry</DialogTitle>
+            <DialogDescription>
+              Search for food and add it to your daily log
+            </DialogDescription>
+          </DialogHeader>
+          <FoodEntryForm 
+            onFoodAdded={() => {
+              handleFoodAdded();
+              setIsFoodModalOpen(false);
+            }} 
+          />
+        </DialogContent>
+      </Dialog>
     </div>
   )
 } 
