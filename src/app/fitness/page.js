@@ -24,6 +24,7 @@ import WorkoutModal from '@/components/WorkoutModal'
 import FoodEntryForm from '@/components/FoodEntryForm'
 import FoodList from '@/components/FoodList'
 import CalorieProgressChart from '@/components/CalorieProgressChart'
+import WeightGoalCard from '@/components/WeightGoalCard'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
 import { toast } from 'react-hot-toast'
 import { format } from 'date-fns'
@@ -237,47 +238,49 @@ export default function FitnessPage() {
   };
 
   return (
-    <div className="container mx-auto px-4 py-8 relative z-10">
+    <div className="container mx-auto px-3 sm:px-4 py-6 sm:py-8 relative z-10">
       {/* Header Section */}
-      <div className="flex flex-col sm:flex-row justify-between items-center mb-8 gap-4">
-        <h1 className="text-3xl font-bold text-white tracking-tight">
-          Fitness Tracking
-        </h1>
-        
-        {/* Mobile Menu Button */}
-        <div className="sm:hidden w-full flex justify-end">
-          <Button 
-            className="bg-gray-800/30 border border-zinc-800 hover:bg-zinc-700 text-white"
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          >
-            <Menu className="h-4 w-4 mr-2" />
-            Menu
-          </Button>
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 sm:mb-8 gap-3 sm:gap-4">
+        <div className="w-full flex justify-between items-center">
+          <h1 className="text-2xl sm:text-3xl font-bold text-white tracking-tight">
+            Fitness Tracking
+          </h1>
+          
+          {/* Mobile Menu Button */}
+          <div className="sm:hidden">
+            <Button 
+              className="bg-gray-800/30 border border-zinc-800 hover:bg-zinc-700 text-white"
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            >
+              <Menu className="h-4 w-4 mr-2" />
+              Menu
+            </Button>
+          </div>
         </div>
         
         {/* Action Buttons */}
-        <div className={`flex flex-col sm:flex-row gap-3 w-full sm:w-auto ${mobileMenuOpen ? 'flex' : 'hidden sm:flex'}`}>
+        <div className={`flex flex-col sm:flex-row gap-2 sm:gap-3 w-full sm:w-auto mt-3 sm:mt-0 ${mobileMenuOpen ? 'flex' : 'hidden sm:flex'}`}>
           <Button 
-            className="bg-gray-800/30 border border-zinc-800 hover:bg-zinc-700 text-white transition-all duration-300 ease-in-out transform hover:scale-105"
+            className="bg-gray-800/30 border border-zinc-800 hover:bg-zinc-700 text-white transition-all duration-300 ease-in-out transform hover:scale-105 text-sm"
             onClick={() => {
               setIsFoodModalOpen(true);
             }}
           >
-            <Utensils className="h-4 w-4 mr-2" />
+            <Utensils className="h-3.5 w-3.5 mr-1.5" />
             Add Food
           </Button>
           <Button 
-            className="bg-gray-800/30 border border-zinc-800 hover:bg-zinc-700 text-white transition-all duration-300 ease-in-out transform hover:scale-105"
+            className="bg-gray-800/30 border border-zinc-800 hover:bg-zinc-700 text-white transition-all duration-300 ease-in-out transform hover:scale-105 text-sm"
             onClick={handleAddWorkout}
           >
-            <Plus className="h-4 w-4 mr-2" />
+            <Plus className="h-3.5 w-3.5 mr-1.5" />
             Add Workout
           </Button>
           <Link href="/fitness/profile" className="w-full sm:w-auto">
             <Button 
-              className="bg-gray-800/30 border border-zinc-800 hover:bg-zinc-700 text-white w-full transition-all duration-300 ease-in-out transform hover:scale-105"
+              className="bg-gray-800/30 border border-zinc-800 hover:bg-zinc-700 text-white w-full transition-all duration-300 ease-in-out transform hover:scale-105 text-sm"
             >
-              <UserCircle className="h-4 w-4 mr-2" />
+              <UserCircle className="h-3.5 w-3.5 mr-1.5" />
               {userProfile ? 'My Profile' : 'Setup Profile'}
             </Button>
           </Link>
@@ -285,93 +288,100 @@ export default function FitnessPage() {
       </div>
 
       {/* Tabs */}
-      <div className="flex flex-wrap gap-2 mb-6 overflow-x-auto scrollbar-hide">
+      <div className="flex flex-wrap gap-2 mb-4 sm:mb-6 overflow-x-auto pb-1 scrollbar-hide">
         <Button
           variant={activeTab === 'overview' ? 'default' : 'outline'}
           onClick={() => setActiveTab('overview')}
-          className="text-white transition-all duration-200"
+          className="text-white transition-all duration-200 text-xs sm:text-sm whitespace-nowrap"
           size="sm"
         >
-          <Activity className="h-4 w-4 mr-2" />
+          <Activity className="h-3.5 w-3.5 mr-1.5" />
           Overview
         </Button>
         <Button
           variant={activeTab === 'workouts' ? 'default' : 'outline'}
           onClick={() => setActiveTab('workouts')}
-          className="text-white transition-all duration-200"
+          className="text-white transition-all duration-200 text-xs sm:text-sm whitespace-nowrap"
           size="sm"
         >
-          <Dumbbell className="h-4 w-4 mr-2" />
+          <Dumbbell className="h-3.5 w-3.5 mr-1.5" />
           Workouts
         </Button>
         <Button
           variant={activeTab === 'food' ? 'default' : 'outline'}
           onClick={() => setActiveTab('food')}
-          className="text-white transition-all duration-200"
+          className="text-white transition-all duration-200 text-xs sm:text-sm whitespace-nowrap"
           size="sm"
         >
-          <Utensils className="h-4 w-4 mr-2" />
+          <Utensils className="h-3.5 w-3.5 mr-1.5" />
           Food
         </Button>
       </div>
 
       {/* Content */}
-      <div className="min-h-[70vh]">
+      <div className="min-h-[60vh] sm:min-h-[70vh]">
         {activeTab === 'overview' && (
-          <div className="space-y-8 animate-fadeIn">
+          <div className="space-y-6 sm:space-y-8 animate-fadeIn">
             {/* Progress Chart */}
             {userProfile ? (
               <div className="transition-all duration-500 ease-in-out transform hover:scale-[1.01]">
                 <CalorieProgressChart />
               </div>
             ) : (
-              <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-lg p-6 text-center py-12 shadow-lg transition-all duration-300 ease-in-out transform hover:scale-105">
-                <UserCircle className="h-12 w-12 text-white/50 mx-auto mb-4 animate-pulse" />
-                <h3 className="text-xl font-semibold text-white mb-2">Profile Not Set Up</h3>
-                <p className="text-white/70 mb-6">
+              <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-lg p-4 sm:p-6 text-center py-8 sm:py-12 shadow-lg transition-all duration-300 ease-in-out transform hover:scale-105">
+                <UserCircle className="h-10 w-10 sm:h-12 sm:w-12 text-white/50 mx-auto mb-3 sm:mb-4 animate-pulse" />
+                <h3 className="text-lg sm:text-xl font-semibold text-white mb-2">Profile Not Set Up</h3>
+                <p className="text-white/70 mb-4 sm:mb-6 text-sm sm:text-base">
                   Set up your profile to get personalized calorie goals and track your progress
                 </p>
                 <Link href="/fitness/profile">
-                  <Button className="bg-blue-600 hover:bg-blue-700 transition-all duration-300 ease-in-out transform hover:scale-105">
+                  <Button className="bg-blue-600 hover:bg-blue-700 transition-all duration-300 ease-in-out transform hover:scale-105 text-sm">
                     Set Up Profile
                   </Button>
                 </Link>
               </div>
             )}
             
+            {/* Weight Goal Card - shown only if profile exists */}
+            {userProfile && (
+              <div className="transition-all duration-500 ease-in-out transform hover:scale-[1.01]">
+                <WeightGoalCard />
+              </div>
+            )}
+            
             {/* Recent Workouts */}
             <div>
-              <h2 className="text-xl font-semibold text-white mb-4 border-b border-white/10 pb-2">Recent Workouts</h2>
+              <h2 className="text-lg sm:text-xl font-semibold text-white mb-3 sm:mb-4 border-b border-white/10 pb-2">Recent Workouts</h2>
               {isLoading ? (
                 <div className="flex justify-center items-center h-32">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
+                  <div className="animate-spin rounded-full h-6 w-6 sm:h-8 sm:w-8 border-b-2 border-white"></div>
                 </div>
               ) : workouts.length === 0 ? (
-                <div className="text-center py-8 text-gray-400 bg-white/5 backdrop-blur-sm border border-white/10 rounded-lg">
+                <div className="text-center py-6 sm:py-8 text-gray-400 bg-white/5 backdrop-blur-sm border border-white/10 rounded-lg text-sm sm:text-base">
                   No workouts yet. Add your first workout!
                 </div>
               ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
                   {workouts.slice(0, 3).map(workout => (
                     <div
                       key={workout.id}
-                      className={`bg-white/5 backdrop-blur-sm border border-white/10 rounded-lg p-4 shadow-lg transition-all duration-300 ease-in-out transform hover:scale-105 ${workout.isDeleting ? 'opacity-0 scale-95' : 'opacity-100'}`}
+                      className={`bg-white/5 backdrop-blur-sm border border-white/10 rounded-lg p-3 sm:p-4 shadow-lg transition-all duration-300 ease-in-out transform hover:scale-105 ${workout.isDeleting ? 'opacity-0 scale-95' : 'opacity-100'}`}
                     >
                       <div className="flex justify-between items-start">
                         <div>
-                          <h3 className="text-lg font-semibold text-white">{workout.name}</h3>
-                          <p className="text-sm text-gray-400">{workout.type}</p>
+                          <h3 className="text-base sm:text-lg font-semibold text-white">{workout.name}</h3>
+                          <p className="text-xs sm:text-sm text-gray-400">{workout.type}</p>
                         </div>
-                        <span className="text-sm text-gray-400 bg-gray-800/30 px-2 py-1 rounded-md">
+                        <span className="text-xs sm:text-sm text-gray-400 bg-gray-800/30 px-2 py-1 rounded-md">
                           {new Date(workout.date).toLocaleDateString()}
                         </span>
                       </div>
-                      <div className="mt-4 flex justify-between text-sm">
+                      <div className="mt-3 sm:mt-4 flex justify-between text-xs sm:text-sm">
                         <span className="text-gray-400 flex items-center">
-                          <Timer className="h-4 w-4 mr-1" /> {workout.duration} min
+                          <Timer className="h-3.5 w-3.5 mr-1" /> {workout.duration} min
                         </span>
                         <span className="text-white flex items-center">
-                          <Flame className="h-4 w-4 mr-1 text-orange-500" /> {workout.calories_burned} cal
+                          <Flame className="h-3.5 w-3.5 mr-1 text-orange-500" /> {workout.calories_burned} cal
                         </span>
                       </div>
                     </div>
@@ -383,35 +393,35 @@ export default function FitnessPage() {
         )}
 
         {activeTab === 'workouts' && (
-          <div className="space-y-8 animate-fadeIn">
+          <div className="space-y-6 sm:space-y-8 animate-fadeIn">
             {isLoading ? (
               <div className="flex justify-center items-center h-32">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
+                <div className="animate-spin rounded-full h-6 w-6 sm:h-8 sm:w-8 border-b-2 border-white"></div>
               </div>
             ) : workouts.length === 0 ? (
-              <div className="text-center py-12 text-gray-400 bg-white/5 backdrop-blur-sm border border-white/10 rounded-lg">
-                <Dumbbell className="h-12 w-12 mx-auto mb-4 text-gray-500/50" />
-                <p className="text-xl font-medium mb-2">No workouts yet</p>
-                <p className="mb-6">Start tracking your fitness journey today</p>
+              <div className="text-center py-8 sm:py-12 text-gray-400 bg-white/5 backdrop-blur-sm border border-white/10 rounded-lg">
+                <Dumbbell className="h-10 w-10 sm:h-12 sm:w-12 mx-auto mb-3 sm:mb-4 text-gray-500/50" />
+                <p className="text-lg sm:text-xl font-medium mb-2">No workouts yet</p>
+                <p className="mb-4 sm:mb-6 text-sm sm:text-base">Start tracking your fitness journey today</p>
                 <Button 
-                  className="bg-blue-600 hover:bg-blue-700"
+                  className="bg-blue-600 hover:bg-blue-700 text-sm"
                   onClick={handleAddWorkout}
                 >
-                  <Plus className="h-4 w-4 mr-2" />
+                  <Plus className="h-3.5 w-3.5 mr-1.5" />
                   Add Your First Workout
                 </Button>
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
                 {workouts.map(workout => (
                   <div
                     key={workout.id}
-                    className={`bg-white/5 backdrop-blur-sm border border-white/10 rounded-lg p-4 shadow-lg transition-all duration-300 ease-in-out ${workout.isDeleting ? 'opacity-0 scale-95' : 'opacity-100 hover:scale-[1.02]'}`}
+                    className={`bg-white/5 backdrop-blur-sm border border-white/10 rounded-lg p-3 sm:p-4 shadow-lg transition-all duration-300 ease-in-out ${workout.isDeleting ? 'opacity-0 scale-95' : 'opacity-100 hover:scale-[1.02]'}`}
                   >
                     <div className="flex justify-between items-start">
                       <div>
-                        <h3 className="text-lg font-semibold text-white">{workout.name}</h3>
-                        <p className="text-sm text-gray-400 flex items-center">
+                        <h3 className="text-base sm:text-lg font-semibold text-white">{workout.name}</h3>
+                        <p className="text-xs sm:text-sm text-gray-400 flex items-center">
                           <Calendar className="h-3 w-3 mr-1" />
                           {new Date(workout.date).toLocaleDateString()}
                         </p>
@@ -477,7 +487,7 @@ export default function FitnessPage() {
         )}
 
         {activeTab === 'food' && (
-          <div className="space-y-8 animate-fadeIn">
+          <div className="space-y-6 sm:space-y-8 animate-fadeIn">
             <div className="flex justify-between items-center">
               <h2 className="text-xl font-semibold text-white mb-4 border-b border-white/10 pb-2">Food Tracking</h2>
               <Button 
@@ -507,11 +517,11 @@ export default function FitnessPage() {
 
       {/* Food Entry Modal - always mounted */}
       <Dialog open={isFoodModalOpen} onOpenChange={setIsFoodModalOpen}>
-        <DialogContent className="bg-black/90 backdrop-blur-md border-zinc-800 text-white">
+        <DialogContent className="sm:max-w-[425px] bg-black/90 border-white/10 text-white">
           <DialogHeader>
-            <DialogTitle>Add Food Entry</DialogTitle>
-            <DialogDescription>
-              Search for food and add it to your daily log
+            <DialogTitle className="text-xl font-bold">Add Food Entry</DialogTitle>
+            <DialogDescription className="text-white/70">
+              Track what you eat to monitor calorie intake
             </DialogDescription>
           </DialogHeader>
           <FoodEntryForm 

@@ -81,6 +81,9 @@ export async function initFitnessDB() {
         weight FLOAT,
         activity_level VARCHAR(20),
         goal VARCHAR(20),
+        target_weight FLOAT,
+        time_frame INTEGER,
+        weight_change_rate FLOAT,
         daily_calorie_goal INTEGER,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -295,15 +298,58 @@ export async function createOrUpdateUserProfile(userId, profileData) {
     weight, 
     activityLevel, 
     goal, 
+    targetWeight,
+    timeFrame,
+    weightChangeRate,
     dailyCalorieGoal 
   } = profileData;
   
+  // Calculate calorie goal if not provided
+  let calculatedCalorieGoal = dailyCalorieGoal;
+  if (!calculatedCalorieGoal) {
+    // Calculate BMR using Mifflin-St Jeor Equation
+    let bmr;
+    if (gender === 'male') {
+      bmr = 10 * weight + 6.25 * height - 5 * age + 5;
+    } else {
+      bmr = 10 * weight + 6.25 * height - 5 * age - 161;
+    }
+    
+    // Apply activity multiplier
+    const activityMultipliers = {
+      sedentary: 1.2,
+      light: 1.375,
+      moderate: 1.55,
+      active: 1.725,
+      very_active: 1.9
+    };
+    
+    let tdee = bmr * (activityMultipliers[activityLevel] || 1.2);
+    
+    // Adjust for goal
+    if (goal === 'lose' && weightChangeRate) {
+      // 7700 calories ≈ 1kg, divide by 7 for daily deficit
+      const dailyDeficit = (7700 * weightChangeRate) / 7;
+      tdee -= dailyDeficit;
+    } else if (goal === 'gain' && weightChangeRate) {
+      // 7700 calories ≈ 1kg, divide by 7 for daily surplus
+      const dailySurplus = (7700 * weightChangeRate) / 7;
+      tdee += dailySurplus;
+    }
+    
+    calculatedCalorieGoal = Math.round(tdee);
+  }
+  
   const result = await sql`
     INSERT INTO user_profiles (
-      user_id, age, gender, height, weight, activity_level, goal, daily_calorie_goal, updated_at
+      user_id, age, gender, height, weight, activity_level, goal, 
+      target_weight, time_frame, weight_change_rate,
+      daily_calorie_goal, updated_at
     )
     VALUES (
-      ${userId}, ${age}, ${gender}, ${height}, ${weight}, ${activityLevel}, ${goal}, ${dailyCalorieGoal}, CURRENT_TIMESTAMP
+      ${userId}, ${age}, ${gender}, ${height}, ${weight}, ${activityLevel}, ${goal}, 
+      ${targetWeight || null}, ${timeFrame || null}, ${weightChangeRate || null},
+      ${calculatedCalorieGoal}, CURRENT_TIMESTAMP
     )
     ON CONFLICT (user_id) 
     DO UPDATE SET
@@ -313,7 +359,10 @@ export async function createOrUpdateUserProfile(userId, profileData) {
       weight = ${weight},
       activity_level = ${activityLevel},
       goal = ${goal},
-      daily_calorie_goal = ${dailyCalorieGoal},
+      target_weight = ${targetWeight || null},
+      time_frame = ${timeFrame || null},
+      weight_change_rate = ${weightChangeRate || null},
+      daily_calorie_goal = ${calculatedCalorieGoal},
       updated_at = CURRENT_TIMESTAMP
     RETURNING *;
   `;
