@@ -9,30 +9,74 @@ import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Calendar } from "@/components/ui/calendar"
 import { format } from "date-fns"
+import { Switch } from "@/components/ui/switch"
+import { Clock, Bell } from "lucide-react"
+import Link from "next/link"
 
 export default function TaskModal({ isOpen, onClose, selectedDate, onSubmit, initialTask }) {
   const [task, setTask] = useState({
     title: '',
     description: '',
     dueDate: selectedDate || new Date(),
+    dueTime: format(new Date().setMinutes(0, 0), 'HH:mm'), // Default to current hour, 0 minutes
     priority: 'medium',
-    status: 'pending'
+    status: 'pending',
+    category: 'general',
+    isAllDay: true,
+    hasReminder: false,
+    reminderEmail: '',
   })
+  
+  const [userEmail, setUserEmail] = useState('')
+  const [remindersEnabled, setRemindersEnabled] = useState(true)
+
+  // Fetch user preferences once when modal opens
+  useEffect(() => {
+    if (isOpen) {
+      const fetchUserPreferences = async () => {
+        try {
+          const response = await fetch('/api/tasks/preferences?userId=1') // TODO: Get actual user ID
+          if (response.ok) {
+            const data = await response.json()
+            if (data && data.email) {
+              setUserEmail(data.email)
+              setRemindersEnabled(data.enable_reminders !== false)
+            }
+          }
+        } catch (error) {
+          console.error('Error fetching user preferences:', error)
+        }
+      }
+      
+      fetchUserPreferences()
+    }
+  }, [isOpen])
 
   // Update task state when initialTask or selectedDate changes
   useEffect(() => {
     if (initialTask) {
-      setTask(initialTask)
+      setTask({
+        ...initialTask,
+        dueTime: initialTask.dueTime || format(new Date().setMinutes(0, 0), 'HH:mm'),
+        isAllDay: initialTask.isAllDay !== undefined ? initialTask.isAllDay : true,
+        hasReminder: initialTask.hasReminder || false,
+        reminderEmail: initialTask.reminderEmail || userEmail || '',
+      })
     } else {
       setTask({
         title: '',
         description: '',
         dueDate: selectedDate || new Date(),
+        dueTime: format(new Date().setMinutes(0, 0), 'HH:mm'),
         priority: 'medium',
-        status: 'pending'
+        status: 'pending',
+        category: 'general',
+        isAllDay: true,
+        hasReminder: false,
+        reminderEmail: userEmail || '',
       })
     }
-  }, [initialTask, selectedDate, isOpen])
+  }, [initialTask, selectedDate, isOpen, userEmail])
 
   const handleSubmit = (e) => {
     e.preventDefault()
@@ -70,7 +114,7 @@ export default function TaskModal({ isOpen, onClose, selectedDate, onSubmit, ini
             />
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
             <div className="space-y-2">
               <Label htmlFor="priority" className="text-white">Priority</Label>
               <Select
@@ -87,6 +131,57 @@ export default function TaskModal({ isOpen, onClose, selectedDate, onSubmit, ini
                 </SelectContent>
               </Select>
             </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="category" className="text-white">Category</Label>
+              <Select
+                value={task.category}
+                onValueChange={(value) => setTask({ ...task, category: value })}
+              >
+                <SelectTrigger className="bg-black border-zinc-800 text-white">
+                  <SelectValue placeholder="Select category" />
+                </SelectTrigger>
+                <SelectContent className="bg-black border-zinc-800 text-white">
+                  <SelectItem value="general">General</SelectItem>
+                  <SelectItem value="work">Work</SelectItem>
+                  <SelectItem value="personal">Personal</SelectItem>
+                  <SelectItem value="health">Health</SelectItem>
+                  <SelectItem value="errands">Errands</SelectItem>
+                  <SelectItem value="finance">Finance</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            
+            <div className="space-y-2">
+              <div className="flex justify-between items-center">
+                <Label htmlFor="dueTime" className="text-white">Time</Label>
+                <div className="flex items-center space-x-2">
+                  <Switch
+                    id="isAllDay"
+                    checked={task.isAllDay}
+                    onCheckedChange={(checked) => setTask({ ...task, isAllDay: checked })}
+                  />
+                  <Label htmlFor="isAllDay" className="text-sm text-zinc-400">All day</Label>
+                </div>
+              </div>
+              {!task.isAllDay ? (
+                <div className="flex items-center">
+                  <Clock className="text-zinc-400 h-4 w-4 mr-2" />
+                  <Input
+                    id="dueTime"
+                    type="time"
+                    value={task.dueTime}
+                    onChange={(e) => setTask({ ...task, dueTime: e.target.value })}
+                    className="bg-black border-zinc-800 text-white"
+                  />
+                </div>
+              ) : (
+                <div className="flex items-center h-9 text-zinc-500 border border-zinc-800 bg-black/50 rounded-md px-3">
+                  <Clock className="text-zinc-400 h-4 w-4 mr-2" />
+                  <span>All day</span>
+                </div>
+              )}
+            </div>
           </div>
 
           <div className="space-y-2">
@@ -99,6 +194,54 @@ export default function TaskModal({ isOpen, onClose, selectedDate, onSubmit, ini
                 className="mx-auto"
               />
             </div>
+          </div>
+
+          <div className="space-y-4 border border-zinc-800 rounded-md p-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-2">
+                <Bell className="text-zinc-400 h-5 w-5" />
+                <Label htmlFor="hasReminder" className="text-white">Email Reminder</Label>
+              </div>
+              <Switch
+                id="hasReminder"
+                checked={task.hasReminder}
+                onCheckedChange={(checked) => setTask({ ...task, hasReminder: checked })}
+                disabled={!remindersEnabled || !userEmail}
+              />
+            </div>
+            
+            {task.hasReminder && (
+              <div className="space-y-2">
+                <Label htmlFor="reminderEmail" className="text-sm text-zinc-400">
+                  Reminder will be sent 30 minutes before the scheduled time
+                </Label>
+                <Input
+                  id="reminderEmail"
+                  type="email"
+                  placeholder="Enter email address"
+                  value={task.reminderEmail}
+                  onChange={(e) => setTask({ ...task, reminderEmail: e.target.value })}
+                  className="bg-black border-zinc-800 text-white"
+                  required={task.hasReminder}
+                />
+                {!userEmail && (
+                  <div className="text-xs text-blue-400 mt-1">
+                    <Link href="/tasks/settings" className="underline">
+                      Set up your default email in settings
+                    </Link>
+                  </div>
+                )}
+              </div>
+            )}
+            
+            {!remindersEnabled && (
+              <div className="text-xs text-yellow-400 mt-1">
+                Email reminders are disabled in your 
+                <Link href="/tasks/settings" className="underline ml-1">
+                  notification settings
+                </Link>
+              </div>
+            )}
           </div>
 
           <div className="flex flex-col sm:flex-row justify-end gap-3 sm:gap-4 pt-2">

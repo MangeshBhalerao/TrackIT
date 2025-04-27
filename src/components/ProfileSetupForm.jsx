@@ -5,8 +5,9 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from 'react-hot-toast';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Target, Calendar, TrendingUp, TrendingDown, Scale, Flame } from 'lucide-react';
+import { Target, Calendar, TrendingUp, TrendingDown, Scale, Flame, Bell } from 'lucide-react';
 import { Slider } from "@/components/ui/slider";
+import { Switch } from "@/components/ui/switch";
 
 export default function ProfileSetupForm({ onComplete }) {
   const [profile, setProfile] = useState({
@@ -18,7 +19,9 @@ export default function ProfileSetupForm({ onComplete }) {
     goal: '',
     targetWeight: '', // target weight in kg
     timeFrame: 12, // weeks to achieve goal
-    weightChangeRate: 0.5 // kg per week
+    weightChangeRate: 0.5, // kg per week
+    email: '', // user email for notifications
+    enableTaskReminders: true // default to enabled
   });
   
   const [loading, setLoading] = useState(false);
@@ -68,7 +71,9 @@ export default function ProfileSetupForm({ onComplete }) {
               goal: data.goal || '',
               targetWeight: data.target_weight || '',
               timeFrame: data.time_frame || 12,
-              weightChangeRate: data.weight_change_rate || 0.5
+              weightChangeRate: data.weight_change_rate || 0.5,
+              email: data.email || '',
+              enableTaskReminders: data.enable_task_reminders !== false // default to true if not set
             });
             setHasProfile(true);
           }
@@ -161,7 +166,7 @@ export default function ProfileSetupForm({ onComplete }) {
   return (
     <div className="max-w-2xl mx-auto">
       <Tabs defaultValue="basic" value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid grid-cols-2 mb-4 sm:mb-8 bg-white/5">
+        <TabsList className="grid grid-cols-3 mb-4 sm:mb-8 bg-white/5">
           <TabsTrigger value="basic" className="data-[state=active]:bg-gray-800/40 hover:bg-gray-700 text-xs sm:text-sm py-1.5 sm:py-2">
             <span className="flex items-center">
               <Scale className="mr-1 sm:mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
@@ -172,6 +177,12 @@ export default function ProfileSetupForm({ onComplete }) {
             <span className="flex items-center">
               <Target className="mr-1 sm:mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
               Weight Goals
+            </span>
+          </TabsTrigger>
+          <TabsTrigger value="notifications" className="data-[state=active]:bg-gray-800/40 hover:bg-gray-700 text-xs sm:text-sm py-1.5 sm:py-2">
+            <span className="flex items-center">
+              <Bell className="mr-1 sm:mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
+              Notifications
             </span>
           </TabsTrigger>
         </TabsList>
@@ -381,6 +392,58 @@ export default function ProfileSetupForm({ onComplete }) {
                 type="button"
                 variant="outline"
                 onClick={() => setActiveTab('basic')}
+                className="border-white/20 hover:bg-white/10 text-white text-xs sm:text-sm h-8 sm:h-10"
+              >
+                Back
+              </Button>
+              
+              <Button
+                type="submit"
+                disabled={loading}
+                className="bg-blue-600 hover:bg-blue-700 text-white text-xs sm:text-sm h-8 sm:h-10"
+              >
+                {loading ? 'Saving...' : hasProfile ? 'Update Profile' : 'Create Profile'}
+              </Button>
+            </div>
+          </TabsContent>
+          
+          <TabsContent value="notifications" className="space-y-4 sm:space-y-6 animate-fadeIn">
+            <div className="space-y-4 sm:space-y-6 bg-white/5 p-4 sm:p-6 rounded-lg border border-white/10">
+              <div className="space-y-1.5 sm:space-y-2">
+                <Label htmlFor="email" className="text-white text-xs sm:text-sm">Email Address for Notifications</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  value={profile.email}
+                  onChange={(e) => handleChange('email', e.target.value)}
+                  placeholder="your.email@example.com"
+                  className="bg-white/5 border-white/10 text-white h-8 sm:h-10 text-xs sm:text-sm"
+                />
+                <p className="text-zinc-400 text-xs mt-1">
+                  We'll use this email for task reminders and important notifications.
+                </p>
+              </div>
+              
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <Label htmlFor="enableTaskReminders" className="text-white text-xs sm:text-sm">Task Reminders</Label>
+                    <p className="text-zinc-400 text-xs">Receive email reminders for your scheduled tasks</p>
+                  </div>
+                  <Switch
+                    id="enableTaskReminders"
+                    checked={profile.enableTaskReminders}
+                    onCheckedChange={(checked) => handleChange('enableTaskReminders', checked)}
+                  />
+                </div>
+              </div>
+            </div>
+            
+            <div className="flex justify-between pt-2">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setActiveTab('goals')}
                 className="border-white/20 hover:bg-white/10 text-white text-xs sm:text-sm h-8 sm:h-10"
               >
                 Back

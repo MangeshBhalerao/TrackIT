@@ -40,6 +40,19 @@ export async function initDB() {
       );
     `;
 
+    // Create task_preferences table
+    await sql`
+      CREATE TABLE IF NOT EXISTS task_preferences (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+        email VARCHAR(255),
+        enable_reminders BOOLEAN DEFAULT true,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE(user_id)
+      );
+    `;
+
     // Create fitness_activities table
     await sql`
       CREATE TABLE IF NOT EXISTS fitness_activities (
@@ -99,10 +112,10 @@ export async function getUserByGoogleId(googleId) {
 }
 
 // Modified task operations to include user_id
-export async function createTask(title, description) {
+export async function createTask(title, description, userId, dueDate, dueTime, isAllDay = false) {
   const result = await sql`
-    INSERT INTO tasks (title, description)
-    VALUES (${title}, ${description})
+    INSERT INTO tasks (title, description, user_id, due_date, due_time, is_all_day)
+    VALUES (${title}, ${description}, ${userId}, ${dueDate}, ${dueTime}, ${isAllDay})
     RETURNING *;
   `;
   return result[0];
@@ -208,5 +221,35 @@ export async function deleteDocument(id) {
     WHERE id = ${id}
     RETURNING *;
   `;
+  return result[0];
+}
+
+// Task preferences operations
+export async function getTaskPreferences(userId) {
+  const result = await sql`
+    SELECT * FROM task_preferences 
+    WHERE user_id = ${userId};
+  `;
+  return result[0] || null;
+}
+
+export async function saveTaskPreferences(userId, preferences) {
+  const { email, enableReminders } = preferences;
+  
+  const result = await sql`
+    INSERT INTO task_preferences (
+      user_id, email, enable_reminders, updated_at
+    )
+    VALUES (
+      ${userId}, ${email}, ${enableReminders !== false}, CURRENT_TIMESTAMP
+    )
+    ON CONFLICT (user_id) 
+    DO UPDATE SET
+      email = ${email},
+      enable_reminders = ${enableReminders !== false},
+      updated_at = CURRENT_TIMESTAMP
+    RETURNING *;
+  `;
+
   return result[0];
 } 

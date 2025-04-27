@@ -166,11 +166,11 @@ export default function FitnessPage() {
       }
 
       const data = await response.json()
-      if (editingWorkout) {
-        setWorkouts(workouts.map(w => 
+    if (editingWorkout) {
+      setWorkouts(workouts.map(w => 
           w.id === editingWorkout.id ? data : w
-        ))
-      } else {
+      ))
+    } else {
         setWorkouts([data, ...workouts])
       }
       fetchStats() // Refresh stats after workout update
@@ -198,7 +198,7 @@ export default function FitnessPage() {
       
       // Wait for animation to complete
       setTimeout(() => {
-        setWorkouts(workouts.filter(w => w.id !== workoutId))
+    setWorkouts(workouts.filter(w => w.id !== workoutId))
         fetchStats() // Refresh stats after workout deletion
       }, 300)
       
@@ -248,16 +248,16 @@ export default function FitnessPage() {
           
           {/* Mobile Menu Button */}
           <div className="sm:hidden">
-            <Button 
+        <Button 
               className="bg-gray-800/30 border border-zinc-800 hover:bg-zinc-700 text-white"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            >
+        >
               <Menu className="h-4 w-4 mr-2" />
               Menu
-            </Button>
+        </Button>
           </div>
         </div>
-        
+
         {/* Action Buttons */}
         <div className={`flex flex-col sm:flex-row gap-2 sm:gap-3 w-full sm:w-auto mt-3 sm:mt-0 ${mobileMenuOpen ? 'flex' : 'hidden sm:flex'}`}>
           <Button 
@@ -320,7 +320,7 @@ export default function FitnessPage() {
 
       {/* Content */}
       <div className="min-h-[60vh] sm:min-h-[70vh]">
-        {activeTab === 'overview' && (
+      {activeTab === 'overview' && (
           <div className="space-y-6 sm:space-y-8 animate-fadeIn">
             {/* Progress Chart */}
             {userProfile ? (
@@ -349,13 +349,13 @@ export default function FitnessPage() {
               </div>
             )}
             
-            {/* Recent Workouts */}
-            <div>
+          {/* Recent Workouts */}
+                  <div>
               <h2 className="text-lg sm:text-xl font-semibold text-white mb-3 sm:mb-4 border-b border-white/10 pb-2">Recent Workouts</h2>
               {isLoading ? (
                 <div className="flex justify-center items-center h-32">
                   <div className="animate-spin rounded-full h-6 w-6 sm:h-8 sm:w-8 border-b-2 border-white"></div>
-                </div>
+                  </div>
               ) : workouts.length === 0 ? (
                 <div className="text-center py-6 sm:py-8 text-gray-400 bg-white/5 backdrop-blur-sm border border-white/10 rounded-lg text-sm sm:text-base">
                   No workouts yet. Add your first workout!
@@ -371,11 +371,11 @@ export default function FitnessPage() {
                         <div>
                           <h3 className="text-base sm:text-lg font-semibold text-white">{workout.name}</h3>
                           <p className="text-xs sm:text-sm text-gray-400">{workout.type}</p>
-                        </div>
+            </div>
                         <span className="text-xs sm:text-sm text-gray-400 bg-gray-800/30 px-2 py-1 rounded-md">
                           {new Date(workout.date).toLocaleDateString()}
                         </span>
-                      </div>
+          </div>
                       <div className="mt-3 sm:mt-4 flex justify-between text-xs sm:text-sm">
                         <span className="text-gray-400 flex items-center">
                           <Timer className="h-3.5 w-3.5 mr-1" /> {workout.duration} min
@@ -383,16 +383,16 @@ export default function FitnessPage() {
                         <span className="text-white flex items-center">
                           <Flame className="h-3.5 w-3.5 mr-1 text-orange-500" /> {workout.calories_burned} cal
                         </span>
-                      </div>
+                    </div>
                     </div>
                   ))}
                 </div>
               )}
-            </div>
           </div>
-        )}
+        </div>
+      )}
 
-        {activeTab === 'workouts' && (
+      {activeTab === 'workouts' && (
           <div className="space-y-6 sm:space-y-8 animate-fadeIn">
             {isLoading ? (
               <div className="flex justify-center items-center h-32">
@@ -414,8 +414,8 @@ export default function FitnessPage() {
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
                 {workouts.map(workout => (
-                  <div
-                    key={workout.id}
+              <div
+                key={workout.id}
                     className={`bg-white/5 backdrop-blur-sm border border-white/10 rounded-lg p-3 sm:p-4 shadow-lg transition-all duration-300 ease-in-out ${workout.isDeleting ? 'opacity-0 scale-95' : 'opacity-100 hover:scale-[1.02]'}`}
                   >
                     <div className="flex justify-between items-start">
@@ -430,7 +430,7 @@ export default function FitnessPage() {
                         <Button
                           variant="ghost"
                           size="icon"
-                          onClick={() => handleEditWorkout(workout)}
+                onClick={() => handleEditWorkout(workout)}
                           className="text-gray-400 hover:text-white transition-colors duration-200"
                         >
                           <Edit className="h-4 w-4" />
@@ -449,7 +449,7 @@ export default function FitnessPage() {
                       <div className="flex items-center justify-between mb-2">
                         <p className="text-sm text-gray-400">Exercises:</p>
                         <span className="text-xs text-gray-500 bg-gray-800/40 px-2 py-1 rounded-full">{workout.type}</span>
-                      </div>
+                  </div>
                       <ul className="mt-2 space-y-2 max-h-[150px] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-transparent pr-2">
                         {workout.exercises?.map((exercise, index) => (
                           <li key={exercise.id || index} className="text-sm text-white flex items-center justify-between gap-2 bg-white/5 rounded-md p-2 group">
@@ -470,7 +470,7 @@ export default function FitnessPage() {
                           </li>
                         ))}
                       </ul>
-                    </div>
+                </div>
                     <div className="mt-4 flex justify-between text-sm pt-2 border-t border-white/10">
                       <span className="text-gray-400 flex items-center">
                         <Timer className="h-4 w-4 mr-1" /> {workout.duration} min
@@ -478,13 +478,13 @@ export default function FitnessPage() {
                       <span className="text-white flex items-center">
                         <Flame className="h-4 w-4 mr-1 text-orange-500" /> {workout.calories_burned} cal
                       </span>
-                    </div>
-                  </div>
-                ))}
+                </div>
               </div>
-            )}
+            ))}
           </div>
-        )}
+            )}
+        </div>
+      )}
 
         {activeTab === 'food' && (
           <div className="space-y-6 sm:space-y-8 animate-fadeIn">
@@ -506,7 +506,7 @@ export default function FitnessPage() {
             </div>
           </div>
         )}
-      </div>
+        </div>
 
       <WorkoutModal
         isOpen={isWorkoutModalOpen}

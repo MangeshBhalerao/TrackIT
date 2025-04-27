@@ -7,6 +7,8 @@ import TaskList from '@/components/TaskList'
 import RealTimeClock from '@/components/RealTimeClock'
 import { Button } from "@/components/ui/button"
 import { format, isToday, isSameDay } from "date-fns"
+import { Settings } from 'lucide-react'
+import Link from 'next/link'
 
 export default function TasksPage() {
   const [selectedDate, setSelectedDate] = useState(null)
@@ -78,9 +80,28 @@ export default function TasksPage() {
   const handleTaskSubmit = async (task) => {
     try {
       if (editingTask) {
-        // Update existing task (to be implemented)
+        // Update existing task
+        const response = await fetch(`/api/tasks/${editingTask.id}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            title: task.title,
+            description: task.description || '',
+            status: task.status,
+            category: task.category || 'general',
+            priority: task.priority || 'medium',
+            dueTime: task.isAllDay ? null : task.dueTime,
+            isAllDay: task.isAllDay,
+            hasReminder: task.hasReminder,
+            reminderEmail: task.hasReminder ? task.reminderEmail : null
+          }),
+        });
+
+        if (!response.ok) throw new Error('Failed to update task');
+        
+        // Update the task in state
         setTasks(tasks.map(t => t.id === editingTask.id ? { ...task, id: editingTask.id } : t))
-        setEditingTask(null)
+        setEditingTask(null);
       } else {
         // Create new task
         const response = await fetch('/api/tasks', {
@@ -88,7 +109,14 @@ export default function TasksPage() {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             title: task.title,
-            description: task.description || ''
+            description: task.description || '',
+            category: task.category || 'general',
+            priority: task.priority || 'medium',
+            dueDate: task.dueDate,
+            dueTime: task.isAllDay ? null : task.dueTime,
+            isAllDay: task.isAllDay,
+            hasReminder: task.hasReminder,
+            reminderEmail: task.hasReminder ? task.reminderEmail : null
           }),
         })
 
@@ -102,11 +130,36 @@ export default function TasksPage() {
           title: newTask.title,
           description: newTask.description,
           status: newTask.status,
-          dueDate: newTask.created_at,
-          priority: 'medium', // Default priority
+          category: newTask.category || 'general',
+          dueDate: newTask.dueDate || newTask.created_at,
+          dueTime: newTask.dueTime,
+          isAllDay: newTask.isAllDay,
+          hasReminder: newTask.hasReminder,
+          reminderEmail: newTask.reminderEmail,
+          priority: newTask.priority || 'medium',
         }
         
         setTasks([...tasks, formattedTask])
+        
+        // Schedule reminder email if enabled
+        if (task.hasReminder && task.reminderEmail) {
+          try {
+            await fetch('/api/tasks/reminder', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                taskId: newTask.id,
+                email: task.reminderEmail,
+                taskTitle: task.title,
+                dueDate: task.dueDate,
+                dueTime: task.dueTime,
+                isAllDay: task.isAllDay
+              }),
+            });
+          } catch (reminderErr) {
+            console.error('Error scheduling reminder:', reminderErr);
+          }
+        }
       }
     } catch (err) {
       console.error('Error saving task:', err)
@@ -256,16 +309,26 @@ export default function TasksPage() {
             <div className="space-y-6 w-full">
               <div className="flex justify-between items-center">
                 <h2 className="text-2xl font-bold text-white">Tasks</h2>
-                <Button
-                  onClick={() => {
-                    setSelectedDate(null)
-                    setEditingTask(null)
-                    setIsModalOpen(true)
-                  }}
-                  className="bg-gray-800/30 border-1 border-gray-800 text-white hover:bg-blue-900 transition-colors"
-                >
-                  Add New Task
-                </Button>
+                <div className="flex space-x-2">
+                  <Link href="/tasks/settings">
+                    <Button
+                      variant="outline"
+                      className="text-white border-zinc-800 bg-black hover:bg-zinc-900"
+                    >
+                      <Settings className="h-4 w-4" />
+                    </Button>
+                  </Link>
+                  <Button
+                    onClick={() => {
+                      setSelectedDate(null)
+                      setEditingTask(null)
+                      setIsModalOpen(true)
+                    }}
+                    className="bg-gray-800/30 border-1 border-gray-800 text-white hover:bg-blue-900 transition-colors"
+                  >
+                    Add New Task
+                  </Button>
+                </div>
               </div>
               <TaskList
                 tasks={activeTasks}
