@@ -138,7 +138,7 @@ export default function TaskSettingsPage() {
                       />
                     </div>
                     <p className="text-zinc-400 text-xs mt-1">
-                      We'll send reminders 30 minutes before scheduled tasks.
+                      We&apos;ll send reminders 30 minutes before scheduled tasks.
                     </p>
                     
                     <div className="mt-3">

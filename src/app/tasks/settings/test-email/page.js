@@ -143,7 +143,7 @@ export default function TestEmailPage() {
               Try Alternative Method
             </Button>
             <p className="text-xs text-zinc-500 mt-1 text-center">
-              If the main method doesn't work, try this alternative
+              If the main method doesn&apos;t work, try this alternative
             </p>
           </div>
         )}
@@ -183,7 +183,7 @@ export default function TestEmailPage() {
             </li>
             <li className="flex gap-2">
               <span className="font-mono bg-zinc-800 px-1.5 rounded text-xs text-white">3</span>
-              Check your spam folder if you don't see the email
+              Check your spam folder if you don&apos;t see the email
             </li>
             <li className="flex gap-2">
               <span className="font-mono bg-zinc-800 px-1.5 rounded text-xs text-white">4</span>
