@@ -5,7 +5,12 @@ import { startReminderScheduler } from '@/scripts/reminderScheduler';
 // Start the scheduler (it will only initialize once)
 let schedulerStarted = false;
 function initializeScheduler() {
-  if (!schedulerStarted && typeof window === 'undefined') {
+  // Only run on the server, never on the client
+  if (typeof window !== 'undefined') {
+    return; // Skip on client side
+  }
+  
+  if (!schedulerStarted) {
     console.log('Initializing task reminder scheduler...');
     try {
       startReminderScheduler();

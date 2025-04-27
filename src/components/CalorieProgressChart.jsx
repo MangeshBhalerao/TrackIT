@@ -20,10 +20,32 @@ export default function CalorieProgressChart() {
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [period, setPeriod] = useState('day'); // 'day', 'week', or 'month'
+  const [windowSize, setWindowSize] = useState({
+    width: 0,
+    isMobile: false
+  });
 
   useEffect(() => {
     fetchData();
   }, [period]);
+
+  useEffect(() => {
+    // Only run on client side
+    setWindowSize({
+      width: window.innerWidth,
+      isMobile: window.innerWidth < 640
+    });
+    
+    const handleResize = () => {
+      setWindowSize({
+        width: window.innerWidth,
+        isMobile: window.innerWidth < 640
+      });
+    };
+    
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   const fetchData = async () => {
     setLoading(true);
@@ -232,12 +254,12 @@ export default function CalorieProgressChart() {
                 <XAxis 
                   dataKey="date" 
                   stroke="#999" 
-                  tick={{ fontSize: window?.innerWidth < 640 ? 10 : 12 }}
+                  tick={{ fontSize: windowSize.isMobile ? 10 : 12 }}
                 />
                 <YAxis 
                   stroke="#999" 
-                  tick={{ fontSize: window?.innerWidth < 640 ? 10 : 12 }}
-                  width={window?.innerWidth < 640 ? 30 : 40}
+                  tick={{ fontSize: windowSize.isMobile ? 10 : 12 }}
+                  width={windowSize.isMobile ? 30 : 40}
                 />
                 <Tooltip 
                   contentStyle={{ backgroundColor: '#111', border: '1px solid #333' }}
@@ -255,9 +277,9 @@ export default function CalorieProgressChart() {
                   }}
                 />
                 <Legend 
-                  wrapperStyle={{ fontSize: window?.innerWidth < 640 ? 10 : 12 }}
-                  iconSize={window?.innerWidth < 640 ? 8 : 10}
-                  verticalAlign={window?.innerWidth < 640 ? "bottom" : "bottom"}
+                  wrapperStyle={{ fontSize: windowSize.isMobile ? 10 : 12 }}
+                  iconSize={windowSize.isMobile ? 8 : 10}
+                  verticalAlign={windowSize.isMobile ? "bottom" : "bottom"}
                   height={30}
                 />
                 <ReferenceLine 

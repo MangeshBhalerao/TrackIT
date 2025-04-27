@@ -9,24 +9,22 @@ import {
 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { toast } from 'react-hot-toast';
+import { useState } from 'react';
 
 export default function DocumentCard({ document, onDelete }) {
   const { id, title, category, file_url, file_type, created_at, public_id } = document;
+  const [showConfirmDelete, setShowConfirmDelete] = useState(false);
 
   const handleDelete = async () => {
-    if (!window.confirm('Are you sure you want to delete this document?')) {
-      return;
-    }
-
     try {
       const response = await fetch(`/api/documents/${id}`, {
         method: 'DELETE',
       });
-
+      
       if (!response.ok) {
         throw new Error('Failed to delete document');
       }
-
+      
       toast.success('Document deleted successfully');
       if (onDelete) {
         onDelete(id);
@@ -35,6 +33,10 @@ export default function DocumentCard({ document, onDelete }) {
       console.error('Error deleting document:', error);
       toast.error('Failed to delete document');
     }
+  };
+
+  const confirmDelete = () => {
+    setShowConfirmDelete(true);
   };
 
   const getFileIcon = () => {
@@ -150,7 +152,7 @@ export default function DocumentCard({ document, onDelete }) {
             Download
           </a>
           <button
-            onClick={handleDelete}
+            onClick={confirmDelete}
             className="px-3 py-1 text-sm bg-red-500/20 text-red-500 rounded hover:bg-red-500/30 transition-colors flex items-center gap-1"
           >
             <Trash2 className="w-4 h-4" />
@@ -158,6 +160,31 @@ export default function DocumentCard({ document, onDelete }) {
           </button>
         </div>
       </div>
+      {showConfirmDelete && (
+        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50">
+          <div className="bg-zinc-900 p-6 rounded-lg max-w-md w-full">
+            <h3 className="text-xl font-bold text-white mb-4">Confirm Delete</h3>
+            <p className="text-zinc-300 mb-6">Are you sure you want to delete this document? This action cannot be undone.</p>
+            <div className="flex justify-end space-x-3">
+              <button 
+                className="px-4 py-2 bg-zinc-700 text-white rounded-md hover:bg-zinc-600"
+                onClick={() => setShowConfirmDelete(false)}
+              >
+                Cancel
+              </button>
+              <button 
+                className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
+                onClick={() => {
+                  handleDelete();
+                  setShowConfirmDelete(false);
+                }}
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 } 

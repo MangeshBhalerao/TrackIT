@@ -5,9 +5,11 @@ import DocumentList from '@/components/DocumentList'
 import DocumentUpload from '@/components/DocumentUpload'
 import { Button } from '@/components/ui/button'
 import { Plus } from 'lucide-react'
+import { useRouter } from 'next/navigation'
 
 export default function DocumentsPage() {
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false)
+  const router = useRouter()
 
   return (
     <div className="space-y-6 pt-4">
@@ -18,7 +20,7 @@ export default function DocumentsPage() {
         onUploadComplete={() => {
           setIsUploadModalOpen(false)
           // Force a refresh of the documents list
-          window.location.reload()
+          router.refresh()
         }}
       />
     </div>

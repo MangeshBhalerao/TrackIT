@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -14,11 +14,12 @@ import { Clock, Bell } from "lucide-react"
 import Link from "next/link"
 
 export default function TaskModal({ isOpen, onClose, selectedDate, onSubmit, initialTask }) {
+  const initialRenderRef = useRef(true)
   const [task, setTask] = useState({
     title: '',
     description: '',
-    dueDate: selectedDate || new Date(),
-    dueTime: format(new Date().setMinutes(0, 0), 'HH:mm'), // Default to current hour, 0 minutes
+    dueDate: null,
+    dueTime: '',
     priority: 'medium',
     status: 'pending',
     category: 'general',
@@ -54,27 +55,35 @@ export default function TaskModal({ isOpen, onClose, selectedDate, onSubmit, ini
 
   // Update task state when initialTask or selectedDate changes
   useEffect(() => {
-    if (initialTask) {
-      setTask({
-        ...initialTask,
-        dueTime: initialTask.dueTime || format(new Date().setMinutes(0, 0), 'HH:mm'),
-        isAllDay: initialTask.isAllDay !== undefined ? initialTask.isAllDay : true,
-        hasReminder: initialTask.hasReminder || false,
-        reminderEmail: initialTask.reminderEmail || userEmail || '',
-      })
-    } else {
-      setTask({
-        title: '',
-        description: '',
-        dueDate: selectedDate || new Date(),
-        dueTime: format(new Date().setMinutes(0, 0), 'HH:mm'),
-        priority: 'medium',
-        status: 'pending',
-        category: 'general',
-        isAllDay: true,
-        hasReminder: false,
-        reminderEmail: userEmail || '',
-      })
+    if (initialRenderRef.current) {
+      initialRenderRef.current = false
+      
+      // Now we can safely use Date objects after component has mounted
+      const now = new Date()
+      const defaultTime = format(new Date(now.setMinutes(0, 0)), 'HH:mm')
+      
+      if (initialTask) {
+        setTask({
+          ...initialTask,
+          dueTime: initialTask.dueTime || defaultTime,
+          isAllDay: initialTask.isAllDay !== undefined ? initialTask.isAllDay : true,
+          hasReminder: initialTask.hasReminder || false,
+          reminderEmail: initialTask.reminderEmail || userEmail || '',
+        })
+      } else {
+        setTask({
+          title: '',
+          description: '',
+          dueDate: selectedDate || new Date(),
+          dueTime: defaultTime,
+          priority: 'medium',
+          status: 'pending',
+          category: 'general',
+          isAllDay: true,
+          hasReminder: false,
+          reminderEmail: userEmail || '',
+        })
+      }
     }
   }, [initialTask, selectedDate, isOpen, userEmail])
 
